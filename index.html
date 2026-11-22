@@ -1,0 +1,1797 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>两相争 · 三国战线对弈</title>
+<style>
+  :root{
+    --bg:#14171c;
+    --surface:#1b1f26;
+    --surface2:#20242c;
+    --ink:#e8e4dc;
+    --ink-dim:#9a968c;
+    --gold:#d9b46a;
+    --line:rgba(255,255,255,.08);
+    --wei:#b0604f;
+    --danger:#c96a5a;
+    --blue:#5a7fa8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{background:var(--bg);color:var(--ink);}
+  body{
+    font-family:"Microsoft YaHei","PingFang SC","Noto Sans CJK SC",sans-serif;
+    font-size:14px;line-height:1.5;
+    padding:18px 16px 40px;
+  }
+  [hidden]{display:none !important;}
+  #app{max-width:1080px;margin:0 auto;}
+  button{font-family:inherit;}
+
+  /* ---------- 顶栏 ---------- */
+  #topbar{
+    display:flex;align-items:center;gap:14px;
+    padding:10px 14px;margin-bottom:12px;
+    background:var(--surface);border:1px solid var(--line);border-radius:8px;
+  }
+  #topbar h1{
+    font-family:"STZhongsong","SimSun",Georgia,serif;
+    font-size:24px;font-weight:700;color:var(--gold);letter-spacing:6px;
+  }
+  .sep{width:1px;height:22px;background:var(--line);}
+  .grow{flex:1;}
+  .round-label{font-size:15px;color:var(--ink);}
+  .dice-wrap{font-size:13px;color:var(--ink-dim);display:flex;align-items:center;gap:6px;}
+  .dice-chip{
+    display:inline-block;min-width:34px;text-align:center;
+    padding:2px 10px;border-radius:4px;font-size:13px;font-weight:700;
+    color:#14171c;background:#3a4048;
+  }
+  .btn{
+    background:var(--surface2);color:var(--ink);
+    border:1px solid rgba(255,255,255,.16);border-radius:6px;
+    padding:7px 16px;font-size:14px;cursor:pointer;min-height:44px;
+  }
+  .btn:hover{border-color:var(--gold);color:var(--gold);}
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+  .btn:disabled:hover{border-color:rgba(255,255,255,.16);color:var(--ink);}
+  .btn.primary{background:var(--gold);border-color:var(--gold);color:#14171c;font-weight:700;}
+  .btn.primary:hover{background:#e6c47e;color:#14171c;}
+  .btn.primary:disabled{background:var(--surface2);border-color:rgba(255,255,255,.16);color:var(--ink);}
+
+  /* ---------- 主帅与资源 ---------- */
+  #stage{position:relative;}
+  #statsRow{
+    display:grid;grid-template-columns:1fr 200px 1fr;gap:10px;margin-bottom:12px;
+  }
+  .hero-panel{
+    background:var(--surface);border:1px solid var(--line);border-radius:8px;
+    padding:10px 16px;
+  }
+  .hero-panel.right{text-align:right;}
+  .hero-title{font-size:13px;letter-spacing:2px;color:var(--ink-dim);margin-top:2px;}
+  .hero-title.wei-t{color:var(--wei);}
+  .hero-title.shu-t{color:var(--gold);}
+  .hero-hp{
+    font-family:Georgia,"Times New Roman",serif;
+    font-size:48px;font-weight:700;color:var(--gold);line-height:1.1;
+  }
+  .hero-hp.pulse{animation:hpPulse .45s ease-out;}
+  @keyframes hpPulse{0%{transform:scale(1)}30%{transform:scale(1.22);color:#e05545}100%{transform:scale(1)}}
+  .caps{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+  .hero-panel.right .caps{justify-content:flex-end;}
+  .cap{
+    background:var(--surface2);border:1px solid var(--line);border-radius:999px;
+    padding:2px 10px;font-size:12px;color:var(--ink-dim);white-space:nowrap;
+  }
+  .cap b{font-size:14px;color:var(--ink);font-weight:700;margin-left:2px;}
+  .mid-panel{
+    background:var(--surface);border:1px solid var(--line);border-radius:8px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+    padding:10px;
+  }
+  .phase-name{font-size:20px;font-weight:700;color:var(--ink);letter-spacing:4px;}
+  .phase-sub{font-size:12px;color:var(--ink-dim);}
+
+  /* ---------- 棋盘 ---------- */
+  #board{
+    display:grid;grid-template-columns:86px repeat(5,1fr);gap:6px;
+    background:var(--surface);border:1px solid var(--line);border-radius:8px;
+    padding:12px;margin-bottom:12px;
+  }
+  .b-corner,.lane-head{
+    font-size:12.5px;color:var(--ink-dim);text-align:center;
+    padding:4px 0;letter-spacing:2px;
+  }
+  .row-label{
+    display:flex;align-items:center;justify-content:center;
+    font-size:13px;letter-spacing:1px;color:var(--ink-dim);
+    border-right:1px solid var(--line);
+  }
+  .row-label.enemy{color:var(--wei);}
+  .row-label.mine{color:var(--gold);}
+  .cell{
+    min-height:132px;border-radius:6px;padding:8px;position:relative;
+    display:flex;flex-direction:column;justify-content:space-between;
+  }
+  .cell.empty{
+    border:1px dashed rgba(255,255,255,.22);
+    align-items:center;justify-content:center;
+    color:rgba(255,255,255,.22);font-size:12px;letter-spacing:2px;
+    cursor:default;
+  }
+  .cell.unit{background:var(--surface2);border:1px solid var(--line);cursor:pointer;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
+  .cell.unit.shu{border-color:rgba(217,180,106,.55);}
+  .cell.unit.wei{border-color:rgba(176,96,79,.6);}
+  .cell.unit:hover{background:#262b34;}
+  .cell.sel{border:1px solid var(--gold);box-shadow:0 0 0 1px var(--gold);}
+  .cell.target{border:1px dashed var(--gold);background:rgba(217,180,106,.07);cursor:pointer;}
+  .cell.target.empty{color:var(--gold);}
+  .u-top{display:flex;justify-content:space-between;align-items:baseline;gap:4px;}
+  .u-name{font-size:14.5px;font-weight:700;}
+  .cell.unit.wei .u-name{color:#d8a091;}
+  .cell.unit.shu .u-name{color:var(--gold);}
+  .u-cost{font-size:11.5px;color:var(--ink-dim);white-space:nowrap;}
+  .u-mid{display:flex;gap:8px;font-size:13px;color:var(--ink-dim);align-items:baseline;}
+  .u-sep{color:rgba(255,255,255,.25);}
+  .u-mid b{font-size:19px;font-family:Georgia,serif;color:var(--ink);font-weight:700;}
+  .u-hp.hurt b{color:var(--danger);}
+  .u-hp.buffed b{color:#8fae8b;}
+  .u-skill{font-size:12px;color:var(--ink-dim);margin-top:3px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;}
+  .u-tag{font-size:12px;color:#7fa8c9;border:1px solid rgba(127,168,201,.45);border-radius:3px;padding:0 4px;line-height:1.5;}
+  .c-text{font-size:12px;font-weight:700;flex:none;}
+  .feed-btns{display:flex;gap:6px;margin-top:6px;}
+  .feed-btns button{
+    flex:1;padding:3px 0;font-size:12.5px;cursor:pointer;border-radius:4px;
+    background:var(--surface);color:var(--ink);border:1px solid rgba(255,255,255,.2);
+  }
+  .feed-btns button:hover{border-color:var(--gold);color:var(--gold);}
+  .feed-btns button:disabled{opacity:.35;cursor:not-allowed;}
+  .feed-btns button:disabled:hover{border-color:rgba(255,255,255,.2);color:var(--ink);}
+
+  /* ---------- 结算特效层 ---------- */
+  #fxLayer{position:absolute;inset:0;pointer-events:none;z-index:30;overflow:visible;}
+  #fxSvg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;}
+  .fx-arrow{stroke:#c0504a;stroke-width:3;fill:none;filter:drop-shadow(0 0 3px rgba(192,80,74,.55));}
+  .fx-arrow.dashed{stroke-dasharray:7 6;}
+  .fx-float{
+    position:absolute;transform:translate(-50%,-100%);
+    color:#e05545;font-weight:800;font-size:20px;font-family:Georgia,serif;
+    text-shadow:0 1px 3px rgba(0,0,0,.75);
+    animation:floatUp .6s ease-out forwards;pointer-events:none;white-space:nowrap;
+  }
+  @keyframes floatUp{0%{opacity:1;transform:translate(-50%,-100%)}100%{opacity:0;transform:translate(-50%,-220%)}}
+  .cell.hit-flash{animation:hitFlash .6s ease-out;}
+  @keyframes hitFlash{
+    0%{border-color:#e05545;box-shadow:0 0 0 2px rgba(224,85,69,.85),0 0 14px rgba(224,85,69,.5);}
+    100%{box-shadow:0 0 0 0 rgba(224,85,69,0);}
+  }
+  .cell.dying{filter:grayscale(1);transform:scale(.88);opacity:0;transition:all .45s ease-in;}
+  .cell.placed{animation:placedGlow .6s ease-out;}
+  @keyframes placedGlow{
+    0%{box-shadow:0 0 0 2px var(--gold),0 0 16px rgba(217,180,106,.5);}
+    100%{box-shadow:0 0 0 0 rgba(217,180,106,0);}
+  }
+
+  /* ---------- 武将详情面板（右键 / 长按） ---------- */
+  #inspectWrap{
+    position:fixed;inset:0;z-index:60;
+    background:rgba(10,12,16,.62);
+    display:flex;align-items:center;justify-content:center;
+    padding:20px;
+  }
+  #inspectPanel{
+    position:relative;width:min(430px,100%);max-height:min(80vh,640px);overflow-y:auto;
+    background:var(--surface);border:1px solid var(--gold);border-radius:10px;
+    box-shadow:0 12px 40px rgba(0,0,0,.55),0 0 0 1px rgba(217,180,106,.15);
+    padding:18px 20px 20px;
+    animation:ipIn .18s ease-out;
+    scrollbar-width:thin;scrollbar-color:#3a4048 var(--surface);
+  }
+  @keyframes ipIn{from{opacity:0;transform:translateY(8px) scale(.97);}to{opacity:1;transform:none;}}
+  .ip-close{
+    position:absolute;top:10px;right:10px;width:44px;height:44px;
+    background:var(--surface2);color:var(--ink-dim);border:1px solid var(--line);
+    border-radius:6px;font-size:20px;line-height:1;cursor:pointer;
+  }
+  .ip-close:hover{color:var(--gold);border-color:var(--gold);}
+  .ip-head{display:flex;align-items:baseline;gap:10px;padding-right:48px;flex-wrap:wrap;}
+  .ip-name{font-size:22px;font-weight:700;font-family:"STZhongsong","SimSun",Georgia,serif;letter-spacing:2px;}
+  .ip-name.shu{color:var(--gold);}
+  .ip-name.wei{color:#d8a091;}
+  .ip-side{font-size:12.5px;color:var(--ink-dim);}
+  .ip-caps{margin-top:12px;}
+  .ip-caps .cap{font-size:13px;padding:4px 12px;}
+  .ip-caps .cap b{font-size:16px;}
+  .ip-row{margin-top:10px;font-size:14px;color:var(--ink-dim);display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+  .ip-row b{color:var(--ink);font-size:15px;}
+  .ip-skill{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:16px;font-weight:700;color:#7fa8c9;}
+  .ip-desc{margin-top:6px;font-size:14.5px;line-height:1.8;color:var(--ink);}
+
+  /* ---------- 终局横幅 / 阶段按钮 ---------- */
+  .over-banner{
+    display:flex;align-items:center;justify-content:center;gap:18px;
+    background:var(--surface);border:1px solid var(--gold);border-radius:8px;
+    padding:14px;margin-bottom:12px;
+    font-size:20px;font-weight:700;color:var(--gold);letter-spacing:3px;
+  }
+  #actionRow{display:flex;align-items:center;gap:14px;margin-bottom:10px;}
+  #phaseBtn{min-width:150px;padding:9px 22px;font-size:15px;}
+  .action-info{font-size:13px;color:var(--ink-dim);}
+
+  /* ---------- 手牌与牌堆 ---------- */
+  #handRow{display:flex;gap:10px;align-items:stretch;margin-bottom:8px;min-height:142px;}
+  .deck-pile{
+    width:118px;flex:none;border:1px dashed rgba(255,255,255,.25);border-radius:6px;
+    background:var(--surface);padding:8px;text-align:center;
+    display:flex;flex-direction:column;justify-content:center;gap:2px;
+    color:var(--ink-dim);font-size:12px;cursor:default;
+  }
+  .deck-pile .deck-n{font-family:Georgia,serif;font-size:26px;color:var(--ink);font-weight:700;}
+  .deck-pile.active{border-color:var(--gold);cursor:pointer;color:var(--gold);}
+  .deck-pile.active:hover{background:rgba(217,180,106,.08);}
+  .deck-pile.active .deck-n{color:var(--gold);}
+  #hand{display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;flex:1;min-width:0;}
+  .hand-empty{color:var(--ink-dim);font-size:13px;align-self:center;padding-left:6px;}
+  .hcard{
+    width:128px;border:1px solid rgba(217,180,106,.4);border-radius:6px;
+    background:var(--surface2);padding:8px 9px;cursor:pointer;
+    display:flex;flex-direction:column;gap:3px;
+  }
+  .hcard:hover{border-color:var(--gold);}
+  .hcard.sel{border:1px solid var(--gold);box-shadow:0 0 0 1px var(--gold);background:#2a2c2a;}
+  .hcard.poor{opacity:.55;}
+  .h-name{font-size:14.5px;font-weight:700;color:var(--gold);}
+  .h-stats{font-size:12px;color:var(--ink-dim);}
+  .h-stats b{color:var(--ink);font-weight:700;}
+  .h-cost{font-size:12px;color:var(--ink);}
+  .h-skill{font-size:11px;color:var(--ink-dim);line-height:1.4;border-top:1px solid var(--line);padding-top:3px;}
+  .h-skill b{color:#7fa8c9;font-weight:600;}
+
+  .hint{
+    min-height:24px;font-size:13px;color:var(--gold);
+    padding:4px 2px;margin-bottom:10px;
+  }
+  .hint.warn{color:var(--danger);}
+
+  /* ---------- 日志 ---------- */
+  #logPanel{background:var(--surface);border:1px solid var(--line);border-radius:8px;}
+  .log-head{
+    padding:8px 14px;font-size:13px;letter-spacing:3px;color:var(--ink-dim);
+    border-bottom:1px solid var(--line);
+  }
+  #log{height:190px;overflow-y:auto;padding:6px 0;}
+  .log-line{padding:2px 14px;font-size:12.5px;color:var(--ink);border-bottom:1px solid rgba(255,255,255,.03);}
+  .log-line .lr{color:var(--ink-dim);margin-right:6px;font-size:11.5px;}
+  .log-line.t-round{color:var(--gold);font-weight:700;padding-top:6px;}
+  .log-line.t-death{color:var(--danger);}
+  .log-line.t-hero{color:var(--gold);}
+  .log-line.t-counter{color:#a8b0ba;}
+  .log-line.t-draw{color:#8fae8b;}
+  .log-line.t-supply{color:#b8a88a;}
+  .log-line.t-skill{color:#7fa8c9;}
+  .log-line.t-win{color:var(--gold);font-weight:700;font-size:14px;}
+
+  /* ---------- 滚动条（战术风） ---------- */
+  ::-webkit-scrollbar{width:10px;height:10px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:#3a4048;border-radius:5px;border:2px solid var(--bg);}
+  ::-webkit-scrollbar-thumb:hover{background:var(--gold);}
+  #log{scrollbar-width:thin;scrollbar-color:#3a4048 var(--bg);}
+
+  /* ---------- 自检输出 ---------- */
+  #selftest{
+    display:none;max-width:1080px;margin:0 auto 14px;
+    padding:12px 16px;border:1px solid var(--gold);border-radius:8px;
+    background:var(--surface);color:var(--gold);
+    font-family:Consolas,"Courier New",monospace;font-size:15px;
+  }
+
+  /* ---------- 手机竖屏（≤640px，目标 390px） ---------- */
+  @media (max-width:640px){
+    body{padding:10px 8px 28px;font-size:13px;}
+    #topbar{flex-wrap:wrap;gap:8px;padding:8px 10px;}
+    #topbar h1{font-size:20px;letter-spacing:3px;}
+    .sep{display:none;}
+    .round-label{font-size:13px;}
+    .btn{min-height:44px;padding:6px 12px;font-size:13px;}
+    #statsRow{grid-template-columns:1fr 1fr;gap:8px;}
+    .mid-panel{display:none;}
+    .hero-panel{padding:8px 10px;}
+    .hero-hp{font-size:48px;}
+    .caps{gap:4px;margin-top:6px;}
+    .cap{padding:2px 8px;font-size:12px;}
+    .cap b{font-size:13px;}
+    #board{grid-template-columns:26px repeat(5,minmax(0,1fr));gap:3px;padding:6px;}
+    .b-corner{font-size:12px;writing-mode:vertical-rl;letter-spacing:1px;}
+    .lane-head{font-size:12px;padding:2px 0;letter-spacing:0;}
+    .row-label{
+      writing-mode:vertical-rl;letter-spacing:3px;font-size:12px;
+      border-right:none;padding:4px 0;
+    }
+    .cell{min-height:150px;padding:5px;border-radius:5px;min-width:0;overflow:hidden;}
+    .cell.empty{font-size:12px;letter-spacing:0;}
+    .u-name{font-size:12px;white-space:nowrap;}
+    .u-cost{font-size:12px;margin-left:auto;}
+    .u-top{flex-wrap:wrap;gap:0 4px;min-width:0;}
+    .u-mid{font-size:12px;gap:0;flex-direction:column;align-items:flex-start;min-width:0;}
+    .u-sep{display:none;}
+    .u-mid b{font-size:15px;}
+    .u-skill{font-size:12px;gap:3px;min-width:0;}
+    .u-tag{font-size:12px;padding:0 3px;}
+    .c-text{font-size:12px;}
+    .feed-btns{gap:4px;}
+    .feed-btns button{min-height:44px;font-size:12px;padding:0;}
+    #actionRow{flex-wrap:wrap;gap:8px;}
+    #phaseBtn{flex:1;min-width:140px;min-height:44px;font-size:14px;}
+    .action-info{font-size:12px;width:100%;}
+    #handRow{min-height:132px;gap:8px;}
+    .deck-pile{width:86px;padding:6px;font-size:12px;}
+    .deck-pile .deck-n{font-size:22px;}
+    #hand{
+      flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;
+      align-content:flex-start;padding-bottom:6px;
+      -webkit-overflow-scrolling:touch;
+      scrollbar-width:thin;scrollbar-color:#3a4048 var(--bg);
+    }
+    .hcard{flex:none;width:122px;}
+    .h-name{font-size:13px;}
+    .h-stats{font-size:12px;}
+    .h-skill{font-size:12px;}
+    .hint{font-size:12px;min-height:20px;}
+    #log{height:160px;}
+    .log-line{font-size:12px;padding:2px 10px;}
+    .over-banner{font-size:16px;letter-spacing:1px;flex-wrap:wrap;gap:10px;padding:10px;}
+    .fx-float{font-size:18px;}
+    #inspectWrap{padding:14px;}
+    #inspectPanel{padding:16px 16px 18px;}
+    .ip-name{font-size:20px;}
+    .ip-caps .cap{font-size:13px;padding:4px 10px;}
+    .ip-caps .cap b{font-size:16px;}
+    .ip-row{font-size:13.5px;}
+    .ip-skill{font-size:15px;}
+    .ip-desc{font-size:14px;line-height:1.75;}
+  }
+</style>
+</head>
+<body>
+<div id="selftest"></div>
+<div id="app">
+
+  <header id="topbar">
+    <h1>两相争</h1>
+    <span class="sep"></span>
+    <span id="roundLabel" class="round-label">第 1 回合</span>
+    <span class="dice-wrap">颜色骰 <span id="diceChip" class="dice-chip">—</span></span>
+    <span class="grow"></span>
+    <button id="speedBtn" class="btn" type="button">速度 ×1</button>
+    <button id="restartBtn" class="btn" type="button">重开</button>
+  </header>
+
+  <div id="stage">
+    <section id="statsRow">
+      <div class="hero-panel" id="weiPanel">
+        <div class="hero-hp" id="weiHp">40</div>
+        <div class="hero-title wei-t">曹魏主帅</div>
+        <div class="caps" id="weiCaps"></div>
+      </div>
+      <div class="mid-panel">
+        <div class="phase-name" id="phaseName">准备</div>
+        <div class="phase-sub" id="phaseSub"></div>
+      </div>
+      <div class="hero-panel right" id="shuPanel">
+        <div class="hero-hp" id="shuHp">40</div>
+        <div class="hero-title shu-t">蜀汉主帅</div>
+        <div class="caps" id="shuCaps"></div>
+      </div>
+    </section>
+
+    <section id="board"></section>
+
+    <div id="fxLayer">
+      <svg id="fxSvg" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="fxHead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#c0504a"></path>
+          </marker>
+        </defs>
+      </svg>
+    </div>
+  </div>
+
+  <div id="overBanner" class="over-banner" hidden>
+    <span id="overText"></span>
+    <button id="overRestart" class="btn primary" type="button">再战一局</button>
+  </div>
+
+  <section id="actionRow">
+    <button id="phaseBtn" class="btn primary" type="button">结束摸牌</button>
+    <span id="actionInfo" class="action-info"></span>
+  </section>
+
+  <section id="handRow">
+    <div id="deckPile" class="deck-pile"></div>
+    <div id="hand"></div>
+  </section>
+
+  <div id="hint" class="hint"></div>
+
+  <section id="logPanel">
+    <div class="log-head">战斗日志</div>
+    <div id="log"></div>
+  </section>
+
+  <div id="inspectWrap" hidden>
+    <div id="inspectPanel" role="dialog" aria-modal="true" aria-label="武将详情">
+      <button id="inspectClose" class="ip-close" type="button" title="关闭（Esc）">×</button>
+      <div id="inspectBody"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+'use strict';
+/* ============================================================
+ * 所有可调数值集中于此
+ * ============================================================ */
+const CONFIG = {
+  HERO_HP: 40,          // 主帅血量
+  POINTS_PER_TURN: 12,  // 每回合摸牌阶段资源点
+  DRAW_COST: 3,         // 抽 1 将消耗的资源点
+  MAX_DRAW: 4,          // 每回合最多抽将数
+  START_SUPPLY: 6,      // 开局自带粮草
+  LANES: 5              // 战线数
+};
+
+/* 卡表 24 将：蜀 12 / 魏 12，各将 1 张，牌库共 12 张。
+ * color：技能生效所需骰色（null = 无色，任何回合生效）
+ * skill：技能 id；desc：卡面说明 */
+const CARD_POOL = {
+  shu: [
+    {name:'关羽',   cost:5, atk:5, hp:6, color:'red',    skill:'double',    desc:'打完之后，再打一次'},
+    {name:'张飞',   cost:5, atk:4, hp:7, color:'yellow', skill:'reflect',   desc:'被反击时，反击者也掉同样多的血'},
+    {name:'赵云',   cost:4, atk:3, hp:6, color:null,     skill:'wounded',   desc:'血量低于3时，攻击力变成6'},
+    {name:'马超',   cost:4, atk:3, hp:4, color:null,     skill:'retaliate', desc:'被反击后，回敬对方一次反击'},
+    {name:'黄忠',   cost:4, atk:4, hp:5, color:null,     skill:'noCounter', desc:'攻击时，对方不能反击'},
+    {name:'简雍',   cost:2, atk:1, hp:3, color:null,     skill:'heroHeal',  desc:'出手前，给主帅回1点血'},
+    {name:'诸葛亮', cost:3, atk:1, hp:2, color:'blue',   skill:'zhuge',     desc:'出手前：粮草+2；最低血将+2血；最低攻将+1攻'},
+    {name:'魏延',   cost:3, atk:4, hp:4, color:'yellow', skill:'heroStrike',desc:'不打武将，直接打主帅；该线敌将会反击他'},
+    {name:'孙乾',   cost:1, atk:1, hp:2, color:'blue',   skill:'supply6',   desc:'出手前，粮草+6'},
+    {name:'庞统',   cost:3, atk:1, hp:2, color:'red',    skill:'fixed3',    desc:'攻击固定打3点，敌方主帅再掉3点'},
+    {name:'法正',   cost:2, atk:1, hp:3, color:null,     skill:'frontHeal', desc:'出手前，己方战线上的将各+1血'},
+    {name:'糜竺',   cost:1, atk:1, hp:1, color:'red',    skill:'mijuu',     desc:'这回合不攻击，自己+3血'}
+  ],
+  wei: [
+    {name:'夏侯惇', cost:3, atk:2, hp:5, color:null,     skill:'counter4',  desc:'反击伤害固定为4'},
+    {name:'张辽',   cost:5, atk:3, hp:6, color:'red',    skill:'splash3',   desc:'攻击时，敌方主帅也掉3点血'},
+    {name:'夏侯渊', cost:3, atk:2, hp:4, color:null,     skill:'prehit',    desc:'出手前先打1点，这1点不可反击'},
+    {name:'荀彧',   cost:3, atk:1, hp:4, color:'yellow', skill:'xunyu',     desc:'这回合不攻击；粮草+4，自己+1血'},
+    {name:'徐晃',   cost:3, atk:3, hp:4, color:'yellow', skill:'atkPlus2',  desc:'攻击伤害+2'},
+    {name:'郭嘉',   cost:3, atk:1, hp:2, color:'blue',   skill:'guojia',    desc:'这回合不攻击；己方所有在场武将+2血'},
+    {name:'许褚',   cost:5, atk:4, hp:7, color:'red',    skill:'selfHeal',  desc:'出手前，自己回1血'},
+    {name:'典韦',   cost:5, atk:3, hp:5, color:null,     skill:'counter4',  desc:'反击伤害固定为4'},
+    {name:'于禁',   cost:2, atk:2, hp:2, color:null,     skill:'supply1',   desc:'出手前，粮草+1'},
+    {name:'李典',   cost:2, atk:3, hp:3, color:'blue',   skill:'atkPlus1',  desc:'攻击伤害+2'},
+    {name:'乐进',   cost:2, atk:1, hp:4, color:null,     skill:'heroPlus2', desc:'打主帅时，伤害+2'},
+    {name:'曹昂',   cost:2, atk:1, hp:6, color:'red',    skill:'caoang',    desc:'这回合不攻击；自己-1血，己方所有在场武将+1血'},
+  ]
+};
+
+/* 技能名（日志格式：【技能名】谁：干了什么） */
+const SKILL_NAME = {
+  double:'武圣', reflect:'燕人咆哮', wounded:'龙胆血怒', retaliate:'回敬反击',
+  noCounter:'禁反', heroHeal:'回春', zhuge:'锦囊妙计', heroStrike:'直袭',
+  supply6:'富商', fixed3:'连环', frontHeal:'鼓舞', mijuu:'厚资',
+  counter3:'反击伤害固定3', splash3:'突袭', prehit:'先击', xunyu:'王佐',
+  atkPlus2:'长驱', guojia:'遗计', selfHeal:'虎痴', counter4:'反击伤害固定4',
+  supply1:'屯田', atkPlus1:'稳进', heroPlus2:'先登', caoang:'舍身'
+};
+/* 「这回合不攻击」类技能（颜色对才休战） */
+const REST_SKILLS = ['mijuu','xunyu','guojia','caoang'];
+
+/* 棋盘行号：0 敌·本营 / 1 敌·战线 / 2 我·战线 / 3 我·本营 */
+const ROW = { wei:{home:0, front:1}, shu:{home:3, front:2} };
+const ROW_LABEL = ['敌·本营','敌·战线','我·战线','我·本营'];
+const SIDE_NAME = { shu:'蜀', wei:'魏' };
+const DICE = [
+  {id:'red',    name:'红', css:'#c0504a'},
+  {id:'yellow', name:'黄', css:'#d9b46a'},
+  {id:'blue',   name:'蓝', css:'#5a7fa8'}
+];
+
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    const t=a[i]; a[i]=a[j]; a[j]=t;
+  }
+  return a;
+}
+
+/* ============================================================
+ * 引擎：只存状态、跑规则，绝不碰 DOM
+ * ============================================================ */
+const Engine = {
+  state: null,
+  audit: null,   // 自检注入的状态校验钩子（引擎本身不做任何输出）
+  deferCombat: false,   // true 时补给结束后不自动结算，交由调用方（UI 动画）驱动 combatGen
+
+  newGame(){
+    this.state = {
+      round: 1,
+      phase: 'prepare',           // prepare / draw / deploy / supply / combat / over
+      color: null,
+      winner: null,
+      uid: 0,
+      board: Array.from({length:CONFIG.LANES}, ()=>[null,null,null,null]),
+      supplyPending: [],          // 补给阶段待决策的战线号
+      log: [],
+      sides: {
+        shu: this.newSide('shu'),
+        wei: this.newSide('wei')
+      }
+    };
+  },
+
+  newSide(side){
+    return {
+      hero: CONFIG.HERO_HP,
+      points: 0,
+      supply: CONFIG.START_SUPPLY,
+      hand: [],
+      deck: this.buildDeck(side),
+      drawn: 0
+    };
+  },
+
+  buildDeck(side){
+    const out = [];
+    for(const t of CARD_POOL[side]){ out.push({...t}); }   // 各将 1 张，共 12 张
+    return shuffle(out);
+  },
+
+  makeUnit(t, owner){
+    return {
+      id: ++this.state.uid,
+      name: t.name, cost: t.cost,
+      baseAtk: t.atk, atk: t.atk,
+      maxHp: t.hp, hp: t.hp,
+      owner: owner,
+      skill: t.skill || null,
+      color: t.color || null,
+      desc: t.desc || '',
+      noAttack: false,     // 本回合休战（站立阶段设置）
+      stoodRound: 0,       // 已执行过站立技能的回合号
+      rageOn: false,       // 龙胆血怒是否已把攻击锁到 6
+      eff: []              // 技能扩展预留位
+    };
+  },
+
+  log(msg, type){
+    this.state.log.push({r:this.state.round, msg:msg, type:type||'sys'});
+  },
+
+  check(){ if(this.audit) this.audit(this.state); },
+
+  /* ---- 阶段 1+2：准备（自动掷骰）并进入摸牌 ---- */
+  startTurn(){
+    const st = this.state;
+    st.color = DICE[Math.floor(Math.random()*DICE.length)];
+    const s = st.sides.shu;
+    s.points = CONFIG.POINTS_PER_TURN;
+    s.drawn = 0;
+    st.phase = 'draw';
+    for(let l=0; l<CONFIG.LANES; l++){
+      for(let r=0; r<4; r++){
+        const u = st.board[l][r];
+        if(u) u.noAttack = false;
+      }
+    }
+    this.log('—— 第 ' + st.round + ' 回合 · 颜色骰「' + st.color.name + '」——', 'round');
+    this.check();
+  },
+
+  /* ---- 摸牌：随机抽 1 张，牌库空则循环重洗 ---- */
+  drawOne(side){
+    const st = this.state, s = st.sides[side];
+    if(s.drawn >= CONFIG.MAX_DRAW) return {ok:false, reason:'本回合最多抽 ' + CONFIG.MAX_DRAW + ' 个将'};
+    if(s.points < CONFIG.DRAW_COST) return {ok:false, reason:'资源点不足（抽将需 ' + CONFIG.DRAW_COST + ' 点）'};
+    if(s.deck.length === 0){
+      s.deck = this.buildDeck(side);
+      this.log(SIDE_NAME[side] + '方牌库已空，循环重洗', 'sys');
+    }
+    const i = Math.floor(Math.random()*s.deck.length);
+    const t = s.deck.splice(i,1)[0];
+    s.points -= CONFIG.DRAW_COST;
+    s.drawn++;
+    const u = this.makeUnit(t, side);
+    s.hand.push(u);
+    this.log(SIDE_NAME[side] + '方抽到 ' + u.name, 'draw');
+    this.check();
+    return {ok:true, unit:u};
+  },
+
+  /* ---- 结束摸牌：剩余点数全部转粮草 ---- */
+  endDraw(){
+    const st = this.state;
+    if(st.phase !== 'draw') return {ok:false, reason:'现在不是摸牌阶段'};
+    const s = st.sides.shu;
+    if(s.points > 0){
+      s.supply += s.points;
+      this.log('摸牌结束，剩余 ' + s.points + ' 点转为粮草', 'sys');
+    }else{
+      this.log('摸牌结束', 'sys');
+    }
+    s.points = 0;
+    st.phase = 'deploy';
+    this.check();
+    return {ok:true};
+  },
+
+  /* ---- 布置：上场 ---- */
+  playCard(side, handIdx, lane, row){
+    const st = this.state, s = st.sides[side];
+    if(side === 'shu' && st.phase !== 'deploy') return {ok:false, reason:'现在不是布置阶段'};
+    const u = s.hand[handIdx];
+    if(!u) return {ok:false, reason:'无效的手牌'};
+    if(row !== ROW[side].home && row !== ROW[side].front) return {ok:false, reason:'只能布置在己方两行'};
+    if(st.board[lane][row]) return {ok:false, reason:'该格已有单位'};
+    if(s.supply < u.cost) return {ok:false, reason:'粮草不足：' + u.name + ' 需要 ' + u.cost + ' 粮草'};
+    s.supply -= u.cost;
+    s.hand.splice(handIdx, 1);
+    st.board[lane][row] = u;
+    this.log(u.name + ' 上场 -' + u.cost + ' 粮草（战线' + (lane+1) + '·' + (row===ROW[side].front?'战线':'本营') + '）', 'play');
+    this.check();
+    return {ok:true};
+  },
+
+  /* ---- 布置：同线 本营↔战线 移动，免费、目标格必须为空 ---- */
+  moveUnit(side, lane, fromRow, toRow){
+    const st = this.state;
+    if(side === 'shu' && st.phase !== 'deploy') return {ok:false, reason:'现在不是布置阶段'};
+    const own = ROW[side];
+    if(fromRow !== own.home && fromRow !== own.front) return {ok:false, reason:'起点不在己方行'};
+    if(toRow !== own.home && toRow !== own.front) return {ok:false, reason:'不能换线：只能在本营与战线之间移动'};
+    if(fromRow === toRow) return {ok:false, reason:'目标格与原格相同'};
+    const u = st.board[lane][fromRow];
+    if(!u || u.owner !== side) return {ok:false, reason:'起点没有己方武将'};
+    if(st.board[lane][toRow]) return {ok:false, reason:'目标格必须为空'};
+    st.board[lane][fromRow] = null;
+    st.board[lane][toRow] = u;
+    this.log(u.name + ' 移至' + (toRow===own.front?'战线':'本营') + '（战线' + (lane+1) + '，免费）', 'move');
+    this.check();
+    return {ok:true};
+  },
+
+  /* ---- 阶段 4：补给 ---- */
+  endDeploy(){
+    const st = this.state;
+    if(st.phase !== 'deploy') return {ok:false, reason:'现在不是布置阶段'};
+    st.phase = 'supply';
+    st.supplyPending = [];
+    for(let l=0; l<CONFIG.LANES; l++){
+      if(st.board[l][ROW.shu.front]) st.supplyPending.push(l);
+    }
+    if(st.supplyPending.length === 0){
+      this.log('我方战线无将，无需补给', 'sys');
+      this.afterSupply();
+    }
+    return {ok:true};
+  },
+
+  feed(lane, fed){
+    const st = this.state;
+    if(st.phase !== 'supply') return {ok:false, reason:'现在不是补给阶段'};
+    const idx = st.supplyPending.indexOf(lane);
+    if(idx < 0) return {ok:false, reason:'该战线无需补给决策'};
+    const u = st.board[lane][ROW.shu.front];
+    const s = st.sides.shu;
+    if(fed){
+      if(s.supply < 1) return {ok:false, reason:'粮草不足，无法喂粮'};
+      s.supply--;
+      this.log('补给：' + u.name + ' 喂粮 -1 粮草', 'supply');
+    }else{
+      this.dealToUnit(lane, ROW.shu.front, 1);
+      this.log('补给：' + u.name + ' 挨饿 -1 血', 'supply');
+      if(u.hp <= 0) this.kill(lane, ROW.shu.front);
+    }
+    st.supplyPending.splice(idx, 1);
+    this.check();
+    if(st.supplyPending.length === 0) this.afterSupply();
+    return {ok:true};
+  },
+
+  /* ---- 阵亡：立即离场，按卡面原始数值重置后洗回己方牌库底（所有加成清空） ---- */
+  kill(lane, row){
+    const st = this.state;
+    const u = st.board[lane][row];
+    if(!u) return;
+    st.board[lane][row] = null;
+    // 关键：回牌库必须恢复卡面原始血量/攻击，绝不带负数或加成回去
+    const tpl = CARD_POOL[u.owner].find(function(c){ return c.name === u.name; });
+    st.sides[u.owner].deck.push({...tpl});
+    this.log(u.name + ' 阵亡，洗回' + SIDE_NAME[u.owner] + '方牌库', 'death');
+  },
+
+  /* ---- 技能通用工具 ---- */
+  colorMatch(u){
+    return !u.color || (this.state.color && this.state.color.id === u.color);
+  },
+
+  skillLog(u, text){
+    this.log('【' + (SKILL_NAME[u.skill] || u.skill) + '】' + u.name + '：' + text, 'skill');
+  },
+
+  /* 对场上单位造成伤害（赵云血怒随时刷新）；死亡由调用方处理 */
+  dealToUnit(lane, row, n){
+    const u = this.state.board[lane][row];
+    if(!u) return null;
+    u.hp -= n;
+    this.syncWounded(u);
+    return u;
+  },
+
+  /* 龙胆血怒同步：血<3 锁攻 6；血回到 3 以上退回卡面攻击 */
+  syncWounded(u){
+    if(!u || u.skill !== 'wounded') return;
+    if(u.hp > 0 && u.hp < 3){
+      if(!u.rageOn && u.atk < 6){
+        u.rageOn = true; u.atk = 6;
+        this.skillLog(u, '血量低于3，攻击变为6');
+      }
+    }else if(u.hp >= 3 && u.rageOn){
+      u.rageOn = false; u.atk = u.baseAtk;
+      this.skillLog(u, '血量回到3以上，攻击退回' + u.baseAtk);
+    }
+  },
+
+  /* 反击值：有反击技按固定值（存活/阵亡均同），否则存活 ceil(基础攻/2)、阵亡固定 1 */
+  counterOf(d, dying){
+    if(d.skill === 'counter3'){ this.skillLog(d, '反击打3点'); return 3; }
+    if(d.skill === 'counter4'){ this.skillLog(d, '反击打4点'); return 4; }
+    return dying ? 1 : Math.ceil(d.baseAtk / 2);
+  },
+
+  hitHero(defSide, n, atkSide){
+    const st = this.state, s = st.sides[defSide];
+    s.hero = Math.max(0, s.hero - n);
+    if(s.hero <= 0 && !st.winner){
+      st.winner = atkSide;
+      this.log(SIDE_NAME[defSide] + '方主帅倒下，' + SIDE_NAME[atkSide] + '方获胜！', 'win');
+    }
+  },
+
+  /* ---- 站立阶段：每回合开打前，双方所有在场武将（含本营）各跑一遍技能 ---- */
+  standingPhase(sideFilter){
+    const st = this.state;
+    const sides = sideFilter ? [sideFilter] : ['shu','wei'];
+    for(const side of sides){
+      const s = st.sides[side];
+      const rows = [ROW[side].front, ROW[side].home];
+      for(let l=0; l<CONFIG.LANES; l++){
+        for(const r of rows){
+          const u = st.board[l][r];
+          if(!u || u.stoodRound === st.round) continue;
+          u.stoodRound = st.round;
+          u.noAttack = false;
+          if(!this.colorMatch(u)) continue;   // 颜色不对：技能不发动，只按卡面数值打
+          switch(u.skill){
+            case 'wounded':
+              this.syncWounded(u);
+              break;
+            case 'heroHeal':
+              if(s.hero < CONFIG.HERO_HP){ s.hero++; this.skillLog(u, '主帅回复1点血'); }
+              break;
+            case 'supply6': s.supply += 6; this.skillLog(u, '粮草+6'); break;
+            case 'supply1': s.supply += 1; this.skillLog(u, '粮草+1'); break;
+            case 'frontHeal':
+              for(let ll=0; ll<CONFIG.LANES; ll++){
+                const f = st.board[ll][ROW[side].front];
+                if(f){ f.hp++; this.syncWounded(f); this.skillLog(u, f.name + ' +1血'); }
+              }
+              break;
+            case 'zhuge': {
+              s.supply += 2; this.skillLog(u, '粮草+2');
+              let lowHp = null, lowAtk = null;
+              for(let ll=0; ll<CONFIG.LANES; ll++){
+                for(const rr of rows){
+                  const f = st.board[ll][rr];
+                  if(!f) continue;
+                  if(!lowHp || f.hp < lowHp.hp) lowHp = f;
+                  if(!lowAtk || f.atk < lowAtk.atk) lowAtk = f;
+                }
+              }
+              if(lowHp){ lowHp.hp += 2; this.syncWounded(lowHp); this.skillLog(u, '血量最低的 ' + lowHp.name + ' +2血'); }
+              if(lowAtk){ lowAtk.atk += 1; this.skillLog(u, '攻击最低的 ' + lowAtk.name + ' +1攻'); }
+              break;
+            }
+            case 'mijuu':
+              u.hp += 3; this.syncWounded(u); u.noAttack = true;
+              this.skillLog(u, '自己+3血，本回合不攻击');
+              break;
+            case 'xunyu':
+              s.supply += 4; u.hp += 1; this.syncWounded(u); u.noAttack = true;
+              this.skillLog(u, '粮草+4，自己+1血，本回合不攻击');
+              break;
+            case 'guojia':
+              for(let ll=0; ll<CONFIG.LANES; ll++){
+                for(const rr of rows){
+                  const f = st.board[ll][rr];
+                  if(f){ f.hp += 2; this.syncWounded(f); }
+                }
+              }
+              u.noAttack = true;
+              this.skillLog(u, '己方全体在场武将+2血，本回合不攻击');
+              break;
+            case 'selfHeal':
+              if(u.hp < u.maxHp){ u.hp++; this.syncWounded(u); this.skillLog(u, '自己回复1点血'); }
+              break;
+            case 'caoang': {
+              u.noAttack = true;
+              this.skillLog(u, '自己-1血，己方全体在场武将+1血，本回合不攻击');
+              this.dealToUnit(l, r, 1);
+              if(u.hp <= 0) this.kill(l, r);
+              for(let ll=0; ll<CONFIG.LANES; ll++){
+                for(const rr of rows){
+                  const f = st.board[ll][rr];
+                  if(f){ f.hp += 1; this.syncWounded(f); }
+                }
+              }
+              break;
+            }
+          }
+        }
+      }
+    }
+    this.check();
+  },
+
+  /* ---- 阶段 5：结算（站立技能 → 我方 → 电脑），首回合不打 ----
+   * 核心为生成器：在关键节点 yield「演示提示」，UI 按提示播动画并逐步推进；
+   * 同步包装直接 drain，自检与动画模式走同一份规则代码。 */
+  beginCombat(){
+    for(const ev of this.combatGen()){ /* drain */ }
+  },
+
+  afterSupply(){
+    if(this.deferCombat){ this.state.phase = 'combatReady'; }
+    else this.beginCombat();
+  },
+
+  *combatGen(){
+    const st = this.state;
+    st.phase = 'combat';
+    this.standingPhase();
+    yield {t:'stand'};
+    if(st.round === 1){
+      this.log('首回合双方按兵不动，未发起攻击', 'sys');
+      yield {t:'rest'};
+    }else{
+      yield* this.resolveSideGen('shu');
+    }
+    if(!st.winner) yield* this.aiTurnGen();
+    this.endRound();
+    yield {t:'turnEnd'};
+  },
+
+  resolveSide(atkSide){
+    for(const ev of this.resolveSideGen(atkSide)){ /* drain */ }
+  },
+
+  *resolveSideGen(atkSide){
+    const st = this.state;
+    const aRow = ROW[atkSide].front;
+    for(let lane=0; lane<CONFIG.LANES; lane++){
+      const a = st.board[lane][aRow];
+      if(!a || a.noAttack) continue;         // 本营的将不进攻；休战的将不出手
+      yield* this.attackLaneGen(atkSide, lane, a);
+      if(st.winner) break;
+      // 关羽【武圣】：打完之后，再打一次（红骰才发动）
+      if(a.hp > 0 && st.board[lane][aRow] === a && a.skill === 'double' && this.colorMatch(a)){
+        this.skillLog(a, '打完再打一次');
+        yield* this.attackLaneGen(atkSide, lane, a);
+        if(st.winner) break;
+      }
+      this.check();
+    }
+  },
+
+  attackLane(atkSide, lane, a){
+    for(const ev of this.attackLaneGen(atkSide, lane, a)){ /* drain */ }
+  },
+
+  /* 一条战线的一次完整出手（规则与上一轮完全一致，仅插入演示提示） */
+  *attackLaneGen(atkSide, lane, a){
+    const st = this.state;
+    const defSide = atkSide === 'shu' ? 'wei' : 'shu';
+    const aRow = ROW[atkSide].front;
+    const dF = ROW[defSide].front, dH = ROW[defSide].home;
+
+    /* 魏延【直袭】：不打武将，直取主帅；该线敌将照常反击他 */
+    if(a.skill === 'heroStrike' && this.colorMatch(a)){
+      this.skillLog(a, '不打武将，直取主帅');
+      this.log(a.name + ' 直取' + SIDE_NAME[defSide] + '方主帅，造成 ' + a.atk + ' 点', 'hero');
+      yield {t:'attack', lane:lane, from:aRow, hero:defSide};
+      this.hitHero(defSide, a.atk, atkSide);
+      yield {t:'heroDmg', side:defSide, n:a.atk};
+      if(st.winner) return;
+      /* 只让对位的那一个武将反击（战线优先，否则本营），不再前后两格都反击 */
+      const dRow0 = st.board[lane][dF] ? dF : dH;
+      const d0 = st.board[lane][dRow0];
+      if(d0){
+        const c = this.counterOf(d0, false);
+        yield {t:'counter', lane:lane, from:dRow0, to:aRow};
+        this.log(d0.name + ' 反击 ' + c + ' 点', 'counter');
+        this.dealToUnit(lane, aRow, c);
+        yield {t:'dmg', lane:lane, row:aRow, n:c};
+        if(a.hp <= 0){
+          yield {t:'death', lane:lane, row:aRow};
+          this.kill(lane, aRow);
+        }
+      }
+      return;
+    }
+
+    let d = st.board[lane][dF], dRow = dF;
+    if(!d){ d = st.board[lane][dH]; dRow = dH; }
+
+    /* 夏侯渊【先击】：出手前先打2点，这2点不可反击 */
+    if(a.skill === 'prehit' && this.colorMatch(a)){
+      if(d){
+        this.skillLog(a, '先打 ' + d.name + ' 1点（不可反击）');
+        yield {t:'attack', lane:lane, from:aRow, to:dRow};
+        this.dealToUnit(lane, dRow, 1);
+        yield {t:'dmg', lane:lane, row:dRow, n:1};
+        if(d.hp <= 0){
+          yield {t:'death', lane:lane, row:dRow};
+          this.kill(lane, dRow);
+          d = st.board[lane][dF]; dRow = dF;
+          if(!d){ d = st.board[lane][dH]; dRow = dH; }
+        }
+      }else{
+        this.skillLog(a, '先打主帅1点（不可反击）');
+        this.log(a.name + ' 直取' + SIDE_NAME[defSide] + '方主帅，造成 1 点', 'hero');
+        yield {t:'attack', lane:lane, from:aRow, hero:defSide};
+        this.hitHero(defSide, 1, atkSide);
+        yield {t:'heroDmg', side:defSide, n:1};
+        if(st.winner) return;
+      }
+    }
+
+    /* 攻击伤害修正 */
+    let dmg = a.atk, extraHero = 0;
+    if(a.skill === 'fixed3' && this.colorMatch(a)){
+      dmg = 3; extraHero = 3;
+      this.skillLog(a, '本次攻击固定3点，敌方主帅再掉3点');
+    }
+    if(a.skill === 'atkPlus2' && this.colorMatch(a)){ dmg += 2; this.skillLog(a, '攻击伤害+2'); }
+    if(a.skill === 'atkPlus1' && this.colorMatch(a)){ dmg += 2; this.skillLog(a, '攻击伤害+2'); }
+    const suppress = a.skill === 'noCounter' && this.colorMatch(a);   // 黄忠【禁反】
+
+    if(d){
+      if(suppress) this.skillLog(a, '对方无法反击');
+      yield {t:'attack', lane:lane, from:aRow, to:dRow};
+      this.dealToUnit(lane, dRow, dmg);
+      this.log(a.name + ' 对 ' + d.name + ' 造成 ' + dmg + ' 点（战线' + (lane+1) + '）', 'dmg');
+      yield {t:'dmg', lane:lane, row:dRow, n:dmg};
+      if(d.hp <= 0){
+        if(suppress){
+          yield {t:'death', lane:lane, row:dRow};
+          this.kill(lane, dRow);
+        }else{
+          /* 阵亡反击：先判死、再结算反击；日志先写反击、再写阵亡。
+           * 有反击技（固定值）按正常算法算完再死；无反击技固定 1 点。 */
+          const c = this.counterOf(d, true);
+          yield {t:'counter', lane:lane, from:dRow, to:aRow};
+          this.log(d.name + ' 阵亡反击 ' + c + ' 点', 'counter');
+          this.dealToUnit(lane, aRow, c);
+          yield {t:'dmg', lane:lane, row:aRow, n:c};
+          yield {t:'death', lane:lane, row:dRow};
+          this.kill(lane, dRow);
+          if(a.hp <= 0){
+            yield {t:'death', lane:lane, row:aRow};
+            this.kill(lane, aRow);
+          }
+        }
+      }else{
+        if(!suppress){
+          const c = this.counterOf(d, false);
+          yield {t:'counter', lane:lane, from:dRow, to:aRow};
+          this.log(d.name + ' 反击 ' + c + ' 点', 'counter');
+          this.dealToUnit(lane, aRow, c);
+          yield {t:'dmg', lane:lane, row:aRow, n:c};
+          /* 张飞【燕人咆哮】：被反击时，反击者也掉同样多的血 */
+          if(a.skill === 'reflect' && this.colorMatch(a) && st.board[lane][dRow] === d){
+            this.skillLog(a, '反击者 ' + d.name + ' 也掉 ' + c + ' 点');
+            this.dealToUnit(lane, dRow, c);
+            yield {t:'dmg', lane:lane, row:dRow, n:c};
+            if(d.hp <= 0){
+              yield {t:'death', lane:lane, row:dRow};
+              this.kill(lane, dRow);
+            }
+          }
+          /* 马超【回敬反击】：被反击后，回敬对方一次反击（ceil(自身基础攻/2)） */
+          if(a.skill === 'retaliate' && this.colorMatch(a) && a.hp > 0 && st.board[lane][dRow] === d){
+            const ret = Math.ceil(a.baseAtk / 2);
+            this.skillLog(a, '回敬 ' + d.name + ' ' + ret + ' 点');
+            this.dealToUnit(lane, dRow, ret);
+            yield {t:'dmg', lane:lane, row:dRow, n:ret};
+            if(d.hp <= 0){
+              yield {t:'death', lane:lane, row:dRow};
+              this.kill(lane, dRow);
+            }
+          }
+          if(a.hp <= 0){
+            yield {t:'death', lane:lane, row:aRow};
+            this.kill(lane, aRow);
+          }
+        }
+      }
+      /* 攻击时触发的溅射（张辽【突袭】/庞统【连环】）：
+       * 必须在防守方生死结算之后，避免提前退场留下负血单位 */
+      if(a.skill === 'splash3' && this.colorMatch(a)){
+        this.skillLog(a, '敌方主帅额外掉3点');
+        this.hitHero(defSide, 3, atkSide);
+        yield {t:'heroDmg', side:defSide, n:3};
+      }
+      if(extraHero){
+        this.hitHero(defSide, extraHero, atkSide);
+        yield {t:'heroDmg', side:defSide, n:extraHero};
+      }
+    }else{
+      /* 两条都空：直取主帅，主帅不反击 */
+      if(a.skill === 'heroPlus2' && this.colorMatch(a)){ dmg += 2; this.skillLog(a, '打主帅伤害+2'); }
+      this.log(a.name + ' 直取' + SIDE_NAME[defSide] + '方主帅，造成 ' + dmg + ' 点', 'hero');
+      yield {t:'attack', lane:lane, from:aRow, hero:defSide};
+      this.hitHero(defSide, dmg, atkSide);
+      yield {t:'heroDmg', side:defSide, n:dmg};
+      if(st.winner) return;
+      if(a.skill === 'splash3' && this.colorMatch(a)){
+        this.skillLog(a, '敌方主帅额外掉3点');
+        this.hitHero(defSide, 3, atkSide);
+        yield {t:'heroDmg', side:defSide, n:3};
+        if(st.winner) return;
+      }
+      if(extraHero){
+        this.hitHero(defSide, extraHero, atkSide);
+        yield {t:'heroDmg', side:defSide, n:extraHero};
+      }
+    }
+  },
+
+  /* ---- 电脑（魏）完整回合：抽 2 → 能上就上 → 低血优先喂粮 → 结算 ---- */
+  aiTurn(){
+    for(const ev of this.aiTurnGen()){ /* drain */ }
+  },
+
+  *aiTurnGen(){
+    const st = this.state, s = st.sides.wei;
+    s.points = CONFIG.POINTS_PER_TURN;
+    if(st.round === 1){
+      s.points += 3;   // 后手补偿：仅第一回合
+      this.log('后手补偿：第一回合额外 3 点资源', 'sys');
+    }
+    s.drawn = 0;
+    this.drawOne('wei');
+    yield {t:'aiDraw'};
+    this.drawOne('wei');
+    yield {t:'aiDraw'};
+    s.supply += s.points;                    // 剩余点数转粮草
+    s.points = 0;
+    yield* this.aiDeployGen('wei');
+    this.standingPhase('wei');   // 新上场的魏将补跑站立技能（已跑过的跳过）
+    yield {t:'stand'};
+    // 补给：按血量从低到高优先喂粮，本营不吃粮
+    const fronts = [];
+    for(let l=0; l<CONFIG.LANES; l++){
+      const u = st.board[l][ROW.wei.front];
+      if(u) fronts.push({l:l, u:u});
+    }
+    fronts.sort((x,y)=>x.u.hp - y.u.hp);
+    for(const f of fronts){
+      let fed = false;
+      if(s.supply > 0){
+        s.supply--;
+        fed = true;
+        this.log('补给：' + f.u.name + ' 喂粮 -1 粮草', 'supply');
+      }else{
+        this.dealToUnit(f.l, ROW.wei.front, 1);
+        this.log('补给：' + f.u.name + ' 挨饿 -1 血', 'supply');
+        if(f.u.hp <= 0) this.kill(f.l, ROW.wei.front);
+      }
+      yield {t:'aiFeed', lane:f.l, fed:fed};
+    }
+    if(st.round > 1 && !st.winner) yield* this.resolveSideGen('wei');
+    this.check();
+  },
+
+  /* 通用 greedy 出牌（电脑用，自检时也驱动蜀方）：费用高的先上，战线优先于本营 */
+  aiDeploy(side){
+    for(const ev of this.aiDeployGen(side)){ /* drain */ }
+  },
+
+  *aiDeployGen(side){
+    const st = this.state, s = st.sides[side];
+    for(;;){
+      let best = -1;
+      for(let i=0; i<s.hand.length; i++){
+        const u = s.hand[i];
+        if(u.cost <= s.supply && (best < 0 || u.cost > s.hand[best].cost)) best = i;
+      }
+      if(best < 0) break;
+      const u = s.hand[best];
+      // 休战类武将优先放本营，避免堵住战线
+      const rest = REST_SKILLS.indexOf(u.skill) >= 0 && this.colorMatch(u);
+      const rows = rest ? [ROW[side].home, ROW[side].front] : [ROW[side].front, ROW[side].home];
+      let spot = null;
+      for(const r of rows){
+        for(let l=0; l<CONFIG.LANES && !spot; l++){
+          if(!st.board[l][r]) spot = {l:l, r:r};
+        }
+      }
+      if(!spot) break;
+      this.playCard(side, best, spot.l, spot.r);
+      yield {t:'aiPlay', lane:spot.l, row:spot.r};
+    }
+  },
+
+  endRound(){
+    const st = this.state;
+    if(st.winner){
+      st.phase = 'over';
+      this.check();
+      return;
+    }
+    st.round++;
+    this.startTurn();
+  }
+};
+
+/* ============================================================
+ * 自检核心（纯逻辑，不碰 DOM）：300 局电脑 vs 电脑
+ * ============================================================ */
+function selfTestCore(games){
+  let totalRounds = 0, stalls = 0, error = null;
+  Engine.audit = function(st){
+    for(const side of ['shu','wei']){
+      const s = st.sides[side];
+      if(s.hero < 0) throw new Error('主帅血量为负');
+      if(s.supply < 0) throw new Error('粮草为负');
+      if(s.points < 0) throw new Error('资源点为负');
+      for(const u of s.hand){
+        if(u.hp <= 0) throw new Error('手牌中存在 0 血单位 ' + u.name);
+      }
+    }
+    for(let l=0; l<CONFIG.LANES; l++){
+      for(let r=0; r<4; r++){
+        const u = st.board[l][r];
+        if(u && (u.hp <= 0 || u.atk < 0)){
+          throw new Error('场上异常单位 ' + u.name + ' hp=' + u.hp);
+        }
+      }
+    }
+  };
+  try{
+    for(let g=0; g<games; g++){
+      Engine.newGame();
+      Engine.startTurn();
+      let guard = 0;
+      while(!Engine.state.winner && Engine.state.round <= 60 && guard++ < 400){
+        // 蜀方也交给简单 AI：抽 2 → 转粮 → 出牌 → 补给
+        Engine.drawOne('shu');
+        Engine.drawOne('shu');
+        Engine.endDraw();
+        Engine.aiDeploy('shu');
+        Engine.endDeploy();
+        let g2 = 0;
+        while(Engine.state.phase === 'supply' && g2++ < 10){
+          const pend = Engine.state.supplyPending.slice().sort(function(a,b){
+            return Engine.state.board[a][ROW.shu.front].hp - Engine.state.board[b][ROW.shu.front].hp;
+          });
+          Engine.feed(pend[0], Engine.state.sides.shu.supply > 0);
+        }
+        Engine.audit(Engine.state);
+      }
+      const rounds = Engine.state.round;
+      totalRounds += rounds;
+      if(rounds > 30) stalls++;
+    }
+  }catch(e){
+    error = e.message || String(e);
+  }
+  Engine.audit = null;
+  return {
+    ok: !error,
+    error: error,
+    avg: (totalRounds / games).toFixed(1),
+    stalls: stalls
+  };
+}
+
+/* ============================================================
+ * 界面：只负责渲染，以及把点击翻译成 Engine 调用
+ * ============================================================ */
+const UI = {
+  sel: null,          // {type:'hand',idx} 或 {type:'unit',lane,row}
+  msg: '',            // 临时提示（非法操作等）
+  msgWarn: false,
+  renderedLog: 0,
+  speed: 1,           // 1 = ×1，2 = ×2（时间减半），0 = 瞬时（无动画）
+  busy: false,        // 结算动画进行中
+  runId: 0,           // 动画运行令牌：重开时自增以中断旧序列
+  inspect: null,      // 详情面板正在查看的格子 {lane,row}
+  lpTimer: 0,         // 长按定时器
+  lpReset: 0,         // 触摸结束后延迟复位 lpTouch 的定时器
+  lpTouch: false,     // 当前是否触摸按住中
+  lpX: 0, lpY: 0,     // 长按起点（移动超阈取消）
+  swallowClick: false, // 长按弹面板后吞掉随之而来的 click
+
+  init(){
+    const self = this;
+    Engine.deferCombat = true;   // 结算交由 UI 动画逐步驱动
+    document.getElementById('restartBtn').addEventListener('click', function(){ self.newGame(); });
+    document.getElementById('overRestart').addEventListener('click', function(){ self.newGame(); });
+    document.getElementById('speedBtn').addEventListener('click', function(){
+      self.speed = self.speed === 1 ? 2 : (self.speed === 2 ? 0 : 1);
+      self.updateSpeedBtn();
+    });
+    document.getElementById('phaseBtn').addEventListener('click', function(){ self.onPhaseBtn(); });
+    document.getElementById('deckPile').addEventListener('click', function(){ self.onDeck(); });
+    document.getElementById('board').addEventListener('click', function(e){ self.onBoard(e); });
+    document.getElementById('hand').addEventListener('click', function(e){ self.onHand(e); });
+    document.getElementById('board').addEventListener('contextmenu', function(e){ self.onUnitContext(e); });
+    document.getElementById('board').addEventListener('touchstart', function(e){ self.onTouchStart(e); }, {passive:true});
+    document.getElementById('board').addEventListener('touchmove', function(e){ self.onTouchMove(e); }, {passive:true});
+    document.getElementById('board').addEventListener('touchend', function(){ self.onTouchEnd(); });
+    document.getElementById('board').addEventListener('touchcancel', function(){ self.onTouchEnd(); });
+    document.getElementById('inspectWrap').addEventListener('click', function(e){ if(e.target === this) self.closeInspect(); });
+    document.getElementById('inspectClose').addEventListener('click', function(){ self.closeInspect(); });
+    document.addEventListener('keydown', function(e){ if(e.key === 'Escape' || e.key === 'Esc') self.closeInspect(); });
+    document.addEventListener('click', function(e){
+      if(self.swallowClick){ self.swallowClick = false; e.stopPropagation(); e.preventDefault(); }
+    }, true);
+    this.newGame();
+  },
+
+  newGame(){
+    this.runId++;
+    this.busy = false;
+    this.clearFx();
+    this.closeInspect();
+    Engine.newGame();
+    Engine.startTurn();
+    this.sel = null;
+    this.msg = '';
+    this.msgWarn = false;
+    this.renderedLog = 0;
+    document.getElementById('log').innerHTML = '';
+    this.render();
+  },
+
+  updateSpeedBtn(){
+    document.getElementById('speedBtn').textContent =
+      this.speed === 0 ? '速度 瞬时' : '速度 ×' + this.speed;
+  },
+
+  flash(text, warn){
+    this.msg = text;
+    this.msgWarn = !!warn;
+  },
+
+  colorTextHtml(color){
+    if(!color) return '';
+    const d = DICE.find(function(x){ return x.id === color; });
+    return '<span class="c-text" style="color:' + d.css + '" title="' + d.name + '骰回合生效">' + d.name + '</span>';
+  },
+
+  /* ---------- 点击翻译 ---------- */
+  onDeck(){
+    if(this.busy) return;
+    const st = Engine.state;
+    if(st.phase !== 'draw'){ this.flash('只有摸牌阶段能点牌堆抽将', true); this.render(); return; }
+    const r = Engine.drawOne('shu');
+    if(r.ok){ this.msg = ''; }
+    else this.flash(r.reason, true);
+    this.render();
+  },
+
+  onPhaseBtn(){
+    if(this.busy) return;
+    const st = Engine.state;
+    if(st.phase === 'draw'){
+      Engine.endDraw();
+      this.sel = null; this.msg = '';
+    }else if(st.phase === 'deploy'){
+      this.sel = null; this.msg = '';
+      Engine.endDeploy();
+    }
+    this.render();
+    this.maybeRunCombat();
+  },
+
+  onHand(e){
+    if(this.busy) return;
+    const card = e.target.closest('.hcard');
+    if(!card) return;
+    const st = Engine.state;
+    const idx = +card.dataset.idx;
+    if(st.phase !== 'deploy'){ this.flash('布置阶段才能使用手牌', true); this.render(); return; }
+    if(this.sel && this.sel.type === 'hand' && this.sel.idx === idx){
+      this.sel = null;
+    }else{
+      this.sel = {type:'hand', idx:idx};
+    }
+    this.msg = '';
+    this.render();
+  },
+
+  onBoard(e){
+    if(this.busy) return;
+    const st = Engine.state;
+    const feedBtn = e.target.closest('[data-feed]');
+    if(feedBtn){
+      const lane = +feedBtn.dataset.lane;
+      const fed = feedBtn.dataset.feed === '1';
+      const r = Engine.feed(lane, fed);
+      if(!r.ok) this.flash(r.reason, true); else this.msg = '';
+      this.render();
+      this.maybeRunCombat();
+      return;
+    }
+    const cell = e.target.closest('.cell');
+    if(!cell) return;
+    const lane = +cell.dataset.lane, row = +cell.dataset.row;
+    if(st.phase !== 'deploy'){
+      this.flash(st.phase === 'supply' ? '补给阶段：请在我方战线将卡上选择「喂粮 / 省粮」' : '当前阶段不能操作棋盘', true);
+      this.render();
+      return;
+    }
+    const u = st.board[lane][row];
+    const own = (row === ROW.shu.front || row === ROW.shu.home);
+    if(this.sel && this.sel.type === 'hand'){
+      if(own && !u){
+        const r = Engine.playCard('shu', this.sel.idx, lane, row);
+        if(r.ok){ this.sel = null; this.msg = ''; }
+        else this.flash(r.reason, true);
+      }else if(u && u.owner === 'shu'){
+        this.sel = {type:'unit', lane:lane, row:row}; this.msg = '';
+      }else{
+        this.flash('只能布置在己方空格（我·战线 / 我·本营）', true);
+      }
+    }else if(this.sel && this.sel.type === 'unit'){
+      if(lane !== this.sel.lane){
+        this.flash('不能换线：只能在本营与战线之间上下移动', true);
+      }else if(u && u.owner === 'shu'){
+        this.sel = {type:'unit', lane:lane, row:row}; this.msg = '';
+      }else if(own && !u){
+        const r = Engine.moveUnit('shu', lane, this.sel.row, row);
+        if(r.ok){ this.sel = null; this.msg = ''; }
+        else this.flash(r.reason, true);
+      }else{
+        this.flash('目标格必须为空', true);
+      }
+    }else{
+      if(u && u.owner === 'shu'){ this.sel = {type:'unit', lane:lane, row:row}; this.msg = ''; }
+      else if(u){ this.flash('这是敌方武将', true); }
+      else{ this.flash('先点一张手牌，或点场上的己方武将', true); }
+    }
+    this.render();
+  },
+
+  /* ---------- 渲染 ---------- */
+  phaseHint(){
+    const st = Engine.state, s = st.sides.shu;
+    const diceNote = st.color ? ' 本回合骰色「' + st.color.name + '」：同色技能发动，无色技能始终发动。' : '';
+    switch(st.phase){
+      case 'draw':
+        return '摸牌阶段：点左侧牌堆抽将（' + CONFIG.DRAW_COST + ' 点/张，最多 ' + CONFIG.MAX_DRAW + ' 张，已抽 ' + s.drawn + ' 张）。点「结束摸牌」后剩余 ' + s.points + ' 点自动转粮草。' + diceNote;
+      case 'deploy':
+        if(this.sel && this.sel.type === 'hand'){
+          const u = s.hand[this.sel.idx];
+          return u ? '已选「' + u.name + '」（需 ' + u.cost + ' 粮草）：点己方空格上场；点其他手牌可换选。' : '';
+        }
+        if(this.sel && this.sel.type === 'unit'){
+          const u = st.board[this.sel.lane][this.sel.row];
+          return u ? '已选场上「' + u.name + '」：点同线另一空格免费移动（本营↔战线），不能换线。' : '';
+        }
+        return '布置阶段：点手牌 → 点己方空格上场（扣粮草）；或点场上己方将 → 点同线另一空格移动（免费）。完成后点「结束回合」。' + diceNote;
+      case 'supply':
+        return '补给阶段：为我方战线上的将点「喂粮」（-1 粮草）或「省粮」（-1 血）。本营的将不吃粮。待决策 ' + st.supplyPending.length + ' 个。';
+      case 'combat':
+      case 'combatReady':
+        return '结算中：红线箭头 = 攻击，红虚线箭头 = 反击；点「速度」可切换 ×1 / ×2 / 瞬时。';
+      case 'over':
+        return '对局结束。点「重开」再战一局。';
+      default:
+        return '';
+    }
+  },
+
+  render(){
+    const st = Engine.state;
+    const shu = st.sides.shu, wei = st.sides.wei;
+
+    /* 顶栏 */
+    document.getElementById('roundLabel').textContent = '第 ' + st.round + ' 回合';
+    const chip = document.getElementById('diceChip');
+    if(st.color){
+      chip.textContent = st.color.name;
+      chip.style.background = st.color.css;
+      chip.style.color = st.color.id === 'yellow' ? '#14171c' : '#e8e4dc';
+    }else{
+      chip.textContent = '—';
+      chip.style.background = '#3a4048';
+    }
+
+    /* 主帅与资源（四个胶囊） */
+    document.getElementById('weiHp').textContent = wei.hero;
+    document.getElementById('shuHp').textContent = shu.hero;
+    const caps = function(s){
+      return '<span class="cap">资源点<b>' + s.points + '</b></span>' +
+        '<span class="cap">粮草<b>' + s.supply + '</b></span>' +
+        '<span class="cap">手牌<b>' + s.hand.length + '</b></span>' +
+        '<span class="cap">牌堆<b>' + s.deck.length + '</b></span>';
+    };
+    document.getElementById('weiCaps').innerHTML = caps(wei);
+    document.getElementById('shuCaps').innerHTML = caps(shu);
+    const phaseNames = {prepare:'准备', draw:'摸牌', deploy:'布置', supply:'补给', combat:'结算', combatReady:'结算', over:'终局'};
+    document.getElementById('phaseName').textContent = phaseNames[st.phase] || '';
+    document.getElementById('phaseSub').textContent =
+      st.phase === 'draw' ? '剩余资源点 ' + shu.points :
+      st.phase === 'supply' ? '待决策 ' + st.supplyPending.length + ' 个' :
+      st.phase === 'deploy' ? '我方粮草 ' + shu.supply : '';
+
+    /* 棋盘 */
+    this.renderBoard();
+    this.renderInspect();
+
+    /* 终局横幅 */
+    const banner = document.getElementById('overBanner');
+    if(st.phase === 'over'){
+      banner.hidden = false;
+      document.getElementById('overText').textContent =
+        st.winner === 'shu' ? '蜀汉大胜 · 魏主授首' : '曹魏获胜 · 蜀主倾覆';
+    }else{
+      banner.hidden = true;
+    }
+
+    /* 阶段按钮 */
+    const pb = document.getElementById('phaseBtn');
+    if(this.busy || st.phase === 'combat' || st.phase === 'combatReady'){ pb.textContent = '结算中'; pb.disabled = true; }
+    else if(st.phase === 'draw'){ pb.textContent = '结束摸牌'; pb.disabled = false; }
+    else if(st.phase === 'deploy'){ pb.textContent = '结束回合'; pb.disabled = false; }
+    else if(st.phase === 'supply'){ pb.textContent = '补给决策中'; pb.disabled = true; }
+    else if(st.phase === 'over'){ pb.textContent = '对局结束'; pb.disabled = true; }
+    else{ pb.textContent = '结算中'; pb.disabled = true; }
+    const infoTail =
+      st.phase === 'draw' ? '已抽 ' + shu.drawn + ' / ' + CONFIG.MAX_DRAW + ' 张 · 剩余 ' + shu.points + ' 点将转为粮草' :
+      st.phase === 'supply' ? '我方粮草 ' + shu.supply + ' · 喂粮每人耗 1 粮草' :
+      (st.phase === 'combat' || st.phase === 'combatReady') ? '逐线结算，箭头指示攻击方向' : '';
+    document.getElementById('actionInfo').textContent =
+      (phaseNames[st.phase] || '') + (infoTail ? ' · ' + infoTail : '');
+    this.updateSpeedBtn();
+
+    /* 牌堆与手牌 */
+    this.renderHand();
+
+    /* 提示 */
+    const hint = document.getElementById('hint');
+    hint.textContent = this.msg || this.phaseHint();
+    hint.className = 'hint' + (this.msg && this.msgWarn ? ' warn' : '');
+
+    /* 日志（增量追加，新条目在下方） */
+    const logEl = document.getElementById('log');
+    const entries = st.log.slice(this.renderedLog);
+    for(const en of entries){
+      const div = document.createElement('div');
+      div.className = 'log-line t-' + en.type;
+      const lr = document.createElement('span');
+      lr.className = 'lr';
+      lr.textContent = '[' + en.r + ']';
+      div.appendChild(lr);
+      div.appendChild(document.createTextNode(en.msg));
+      logEl.appendChild(div);
+    }
+    this.renderedLog = st.log.length;
+    logEl.scrollTop = logEl.scrollHeight;
+  },
+
+  renderBoard(){
+    const st = Engine.state;
+    const b = document.getElementById('board');
+    let html = '<div class="b-corner">战线</div>';
+    for(let l=0; l<CONFIG.LANES; l++) html += '<div class="lane-head">' + (l+1) + ' 号线</div>';
+    const sel = this.sel;
+    for(let r=0; r<4; r++){
+      const enemyRow = (r === ROW.wei.home || r === ROW.wei.front);
+      html += '<div class="row-label ' + (enemyRow?'enemy':'mine') + '">' + ROW_LABEL[r] + '</div>';
+      for(let l=0; l<CONFIG.LANES; l++){
+        const u = st.board[l][r];
+        const own = (r === ROW.shu.front || r === ROW.shu.home);
+        let target = false;
+        if(st.phase === 'deploy' && sel){
+          if(sel.type === 'hand') target = own && !u;
+          else if(sel.type === 'unit') target = own && !u && l === sel.lane && r !== sel.row;
+        }
+        const isSel = u && sel && sel.type === 'unit' && sel.lane === l && sel.row === r;
+        const willRest = u && REST_SKILLS.indexOf(u.skill) >= 0 && Engine.colorMatch(u);
+        if(!u){
+          html += '<div class="cell empty' + (target?' target':'') + '" data-lane="' + l + '" data-row="' + r + '">' + (target?'可落子':'空') + '</div>';
+          continue;
+        }
+        let feedHtml = '';
+        if(st.phase === 'supply' && u.owner === 'shu' && r === ROW.shu.front && st.supplyPending.indexOf(l) >= 0){
+          const noFood = st.sides.shu.supply < 1;
+          feedHtml = '<div class="feed-btns">' +
+            '<button type="button" data-feed="1" data-lane="' + l + '"' + (noFood?' disabled title="粮草不足"':'') + '>喂粮</button>' +
+            '<button type="button" data-feed="0" data-lane="' + l + '">省粮</button></div>';
+        }
+        html += '<div class="cell unit ' + u.owner + (isSel?' sel':'') + (target?' target':'') + '" data-lane="' + l + '" data-row="' + r + '" title="' + u.desc + '">' +
+          '<div class="u-top"><span class="u-name">' + u.name + '</span><span class="u-cost">粮 ' + u.cost + '</span></div>' +
+          '<div class="u-mid"><span class="u-atk">攻 <b>' + u.atk + '</b></span><span class="u-sep">·</span>' +
+          '<span class="u-hp' + (u.hp < u.maxHp?' hurt':'') + (u.hp > u.maxHp?' buffed':'') + '">血 <b>' + Math.max(0,u.hp) + '</b>/' + u.maxHp + '</span></div>' +
+          '<div class="u-skill">' + this.colorTextHtml(u.color) + '<span>【' + (SKILL_NAME[u.skill]||'') + '】</span>' +
+          (willRest ? '<span class="u-tag" title="骰色匹配：本回合结算时不攻击，技能照常生效">休战</span>' : '') + '</div>' +
+          feedHtml + '</div>';
+      }
+    }
+    b.innerHTML = html;
+  },
+
+  renderHand(){
+    const st = Engine.state, s = st.sides.shu;
+    const pile = document.getElementById('deckPile');
+    pile.className = 'deck-pile' + (st.phase === 'draw' && !this.busy ? ' active' : '');
+    pile.innerHTML = '<div>牌堆</div><div class="deck-n">' + s.deck.length + '</div>' +
+      '<div>抽将 -' + CONFIG.DRAW_COST + ' 点</div><div>已抽 ' + s.drawn + '/' + CONFIG.MAX_DRAW + '</div>';
+    const hand = document.getElementById('hand');
+    if(s.hand.length === 0){
+      hand.innerHTML = '<div class="hand-empty">暂无手牌' + (st.phase === 'draw' ? '，点左侧牌堆抽将' : '') + '</div>';
+      return;
+    }
+    let html = '';
+    for(let i=0; i<s.hand.length; i++){
+      const u = s.hand[i];
+      const isSel = this.sel && this.sel.type === 'hand' && this.sel.idx === i;
+      const poor = u.cost > s.supply;
+      html += '<div class="hcard' + (isSel?' sel':'') + (poor?' poor':'') + '" data-idx="' + i + '">' +
+        '<div class="h-name">' + u.name + ' ' + this.colorTextHtml(u.color) + '</div>' +
+        '<div class="h-stats">攻 <b>' + u.atk + '</b> · 血 <b>' + u.hp + '</b> · 粮 <b>' + u.cost + '</b></div>' +
+        '<div class="h-skill"><b>【' + (SKILL_NAME[u.skill]||'') + '】</b>' + u.desc + '</div></div>';
+    }
+    hand.innerHTML = html;
+  },
+
+  /* ---------- 武将详情面板：右键 / 长按弹出，三种方式关闭 ---------- */
+  onUnitContext(e){
+    const cell = e.target.closest('.cell.unit');
+    if(!cell) return;
+    e.preventDefault();
+    if(this.lpTouch) this.swallowClick = true;   // 移动端长按会伴随 contextmenu，吞掉后续 click
+    this.openInspect(+cell.dataset.lane, +cell.dataset.row);
+  },
+
+  onTouchStart(e){
+    this.cancelLp();
+    const cell = e.target.closest('.cell.unit');
+    if(!cell || e.touches.length !== 1) return;
+    this.lpTouch = true;
+    this.lpX = e.touches[0].clientX;
+    this.lpY = e.touches[0].clientY;
+    const lane = +cell.dataset.lane, row = +cell.dataset.row;
+    const self = this;
+    this.lpTimer = setTimeout(function(){
+      self.lpTimer = 0;
+      self.swallowClick = true;
+      if(navigator.vibrate) navigator.vibrate(12);
+      self.openInspect(lane, row);
+    }, 800);   // 按住约一秒弹出
+  },
+
+  onTouchMove(e){
+    if(!this.lpTimer) return;
+    const t = e.touches[0];
+    if(Math.abs(t.clientX - this.lpX) > 12 || Math.abs(t.clientY - this.lpY) > 12) this.onTouchEnd();
+  },
+
+  cancelLp(){
+    if(this.lpTimer){ clearTimeout(this.lpTimer); this.lpTimer = 0; }
+  },
+
+  onTouchEnd(){
+    this.cancelLp();
+    if(this.lpReset) clearTimeout(this.lpReset);
+    const self = this;
+    this.lpReset = setTimeout(function(){ self.lpTouch = false; self.lpReset = 0; }, 350);
+  },
+
+  openInspect(lane, row){
+    this.inspect = {lane:lane, row:row};
+    this.renderInspect();
+    document.getElementById('inspectWrap').hidden = false;
+  },
+
+  closeInspect(){
+    if(!this.inspect) return;
+    this.inspect = null;
+    document.getElementById('inspectWrap').hidden = true;
+  },
+
+  renderInspect(){
+    if(!this.inspect) return;
+    const u = Engine.state.board[this.inspect.lane][this.inspect.row];
+    if(!u){ this.closeInspect(); return; }   // 查看期间阵亡离场：自动收起
+    let colorTxt;
+    if(u.color){
+      const d = DICE.find(function(x){ return x.id === u.color; });
+      colorTxt = '<b style="color:' + d.css + '">' + d.name + '</b>（仅' + d.name + '骰回合发动技能）';
+    }else{
+      colorTxt = '<b>无色</b>（任何回合都发动技能）';
+    }
+    document.getElementById('inspectBody').innerHTML =
+      '<div class="ip-head"><span class="ip-name ' + u.owner + '">' + u.name + '</span>' +
+      '<span class="ip-side">' + SIDE_NAME[u.owner] + '方 · ' + (this.inspect.lane+1) + ' 号线 · ' + ROW_LABEL[this.inspect.row] + '</span></div>' +
+      '<div class="caps ip-caps">' +
+      '<span class="cap">上场粮草<b>' + u.cost + '</b></span>' +
+      '<span class="cap">攻击<b>' + u.atk + '</b></span>' +
+      '<span class="cap">血量<b>' + Math.max(0,u.hp) + '/' + u.maxHp + '</b></span></div>' +
+      '<div class="ip-row">颜色骰 ' + colorTxt + '</div>' +
+      '<div class="ip-skill">【' + (SKILL_NAME[u.skill]||'') + '】</div>' +
+      '<div class="ip-desc">' + u.desc + '</div>';
+  },
+
+  /* ---------- 结算动画播放器：逐条消费引擎生成器的演示提示 ---------- */
+  maybeRunCombat(){
+    if(!this.busy && Engine.state.phase === 'combatReady') this.runCombat();
+  },
+
+  async runCombat(){
+    if(this.busy) return;
+    this.busy = true;
+    this.msg = '';
+    const runId = ++this.runId;
+    if(this.speed === 0){
+      // 瞬时：不做动画，规则一次性 drain，日志照写
+      for(const ev of Engine.combatGen()){ /* drain */ }
+      this.busy = false;
+      this.render();
+      return;
+    }
+    const gen = Engine.combatGen();
+    this.render();
+    for(;;){
+      const step = gen.next();
+      if(step.done) break;
+      if(this.runId !== runId) return;   // 已被重开中断
+      this.render();
+      await this.playEvent(step.value);
+      if(this.runId !== runId) return;
+    }
+    this.clearFx();
+    this.busy = false;
+    this.render();
+  },
+
+  wait(ms){
+    const k = this.speed === 0 ? 0 : (this.speed === 2 ? 0.5 : 1);
+    return new Promise(function(r){ setTimeout(r, ms * k); });
+  },
+
+  async playEvent(ev){
+    switch(ev.t){
+      case 'stand': await this.wait(300); break;
+      case 'rest': await this.wait(350); break;
+      case 'attack': this.drawArrow(ev, false); await this.wait(500); this.clearArrows(); break;
+      case 'counter': this.drawArrow(ev, true); await this.wait(400); this.clearArrows(); break;
+      case 'dmg': this.flashCell(ev.lane, ev.row); this.floatCell(ev.lane, ev.row, '-' + ev.n); await this.wait(600); break;
+      case 'heroDmg': this.pulseHero(ev.side); this.floatHero(ev.side, '-' + ev.n); await this.wait(600); break;
+      case 'death': this.dyingCell(ev.lane, ev.row); await this.wait(500); break;
+      case 'aiDraw': await this.wait(450); break;
+      case 'aiPlay': this.placedCell(ev.lane, ev.row); await this.wait(600); break;
+      case 'aiFeed': await this.wait(200); break;
+      case 'turnEnd': await this.wait(250); break;
+    }
+  },
+
+  /* ---------- 特效工具（全部挂在 fxLayer，不混入棋盘 DOM） ---------- */
+  stageRect(){ return document.getElementById('stage').getBoundingClientRect(); },
+
+  cellEl(lane, row){
+    return document.querySelector('#board .cell[data-lane="' + lane + '"][data-row="' + row + '"]');
+  },
+
+  centerOf(el){
+    const r = el.getBoundingClientRect(), s = this.stageRect();
+    return {x: r.left - s.left + r.width/2, y: r.top - s.top + r.height/2, top: r.top - s.top, w: r.width, h: r.height};
+  },
+
+  drawArrow(ev, dashed){
+    const fromEl = this.cellEl(ev.lane, ev.from);
+    const toEl = ev.hero ? document.getElementById(ev.hero === 'wei' ? 'weiHp' : 'shuHp') : this.cellEl(ev.lane, ev.to);
+    if(!fromEl || !toEl) return;
+    const a = this.centerOf(fromEl), b = this.centerOf(toEl);
+    const dx = b.x - a.x, dy = b.y - a.y, len = Math.sqrt(dx*dx + dy*dy) || 1;
+    const ux = dx/len, uy = dy/len;
+    const svg = document.getElementById('fxSvg');
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', a.x + ux * Math.max(0, a.w/2 - 6));
+    line.setAttribute('y1', a.y + uy * Math.max(0, a.h/2 - 6));
+    line.setAttribute('x2', b.x - ux * 30);
+    line.setAttribute('y2', b.y - uy * 30);
+    line.setAttribute('class', 'fx-arrow' + (dashed ? ' dashed' : ''));
+    line.setAttribute('marker-end', 'url(#fxHead)');
+    svg.appendChild(line);
+  },
+
+  clearArrows(){
+    document.getElementById('fxSvg').querySelectorAll('line').forEach(function(l){ l.remove(); });
+  },
+
+  clearFx(){
+    this.clearArrows();
+    document.querySelectorAll('#fxLayer .fx-float').forEach(function(f){ f.remove(); });
+  },
+
+  floatAt(x, y, text){
+    const f = document.createElement('div');
+    f.className = 'fx-float';
+    f.textContent = text;
+    f.style.left = x + 'px';
+    f.style.top = y + 'px';
+    document.getElementById('fxLayer').appendChild(f);
+    setTimeout(function(){ f.remove(); }, 700);
+  },
+
+  floatCell(lane, row, text){
+    const el = this.cellEl(lane, row);
+    if(!el) return;
+    const c = this.centerOf(el);
+    this.floatAt(c.x, c.top + 6, text);
+  },
+
+  floatHero(side, text){
+    const el = document.getElementById(side === 'wei' ? 'weiHp' : 'shuHp');
+    const c = this.centerOf(el);
+    this.floatAt(c.x, c.top + 4, text);
+  },
+
+  flashCell(lane, row){
+    const el = this.cellEl(lane, row);
+    if(el) el.classList.add('hit-flash');
+  },
+
+  dyingCell(lane, row){
+    const el = this.cellEl(lane, row);
+    if(el) el.classList.add('dying');
+  },
+
+  placedCell(lane, row){
+    const el = this.cellEl(lane, row);
+    if(el) el.classList.add('placed');
+  },
+
+  pulseHero(side){
+    const el = document.getElementById(side === 'wei' ? 'weiHp' : 'shuHp');
+    el.classList.remove('pulse');
+    void el.offsetWidth;   // 重置动画
+    el.classList.add('pulse');
+  }
+};
+
+/* ============================================================
+ * 启动：#selftest 跑自检，否则正常开局
+ * ============================================================ */
+if(location.hash === '#selftest'){
+  document.getElementById('app').style.display = 'none';
+  const r = selfTestCore(300);
+  const el = document.getElementById('selftest');
+  el.style.display = 'block';
+  el.textContent = r.ok
+    ? 'SELFTEST OK games=300 avgRounds=' + r.avg + ' stalls=' + r.stalls
+    : 'SELFTEST FAIL: ' + r.error;
+}else{
+  UI.init();
+}
+</script>
+</body>
+</html>
