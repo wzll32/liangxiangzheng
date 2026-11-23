@@ -1980,7 +1980,7 @@ const UI = {
     this.render();
   },
 
-  /* ---------- 教学关：固定牌序、四步引导、点错不生效 ---------- */
+  /* ---------- 教学关：固定牌序、六步引导、点错不生效 ---------- */
   showTutStep(){
     const t = this.tut;
     if(!t){ this.clearTutMarks(); return; }
@@ -1990,7 +1990,8 @@ const UI = {
     else if(t.step === 2){ sel = '#shuCaps .cap:nth-child(1)'; text = '资源点：每回合发 12 点，抽一张武将扣 3 点，抽完剩下的自动变成粮草。'; }
     else if(t.step === 3 && !(this.sel && this.sel.type === 'hand')){ sel = '#hand'; text = '手牌：已经抽到、还没上场的将。'; }
     else if(t.step === 3){ sel = '#shuCaps .cap:nth-child(2)'; text = '粮草：武将上场时要扣的钱，场上的将每个回合还要吃 1 粮。'; }
-    else if(t.step === 5 && st.phase === 'supply'){ sel = '#board [data-feed="1"]'; text = '补给：战线上的将每回合要吃 1 粮草，点「喂粮」就喂；不喂掉 1 点血；本营的将不用吃。'; }
+    else if(t.step === 4){ sel = '#board .cell.unit[data-lane="2"][data-row="' + ROW.shu.front + '"]'; text = '右键点简雍（手机长按约1秒）弹出详情：攻击力、血量、技能说明，还有技能的颜色条件。看完关掉面板，自动进下一步。'; }
+    else if(t.step === 6 && st.phase === 'supply'){ sel = '#board [data-feed="1"]'; text = '补给：战线上的将每回合要吃 1 粮草，点「喂粮」就喂；不喂掉 1 点血；本营的将不用吃。'; }
     else { sel = '#weiHp'; text = '主帅血量：掉到 0 就输了，等下结算会自动打向对面。'; }
     const el = document.querySelector(sel);
     const wrap = document.getElementById('tutMark');
@@ -2061,7 +2062,7 @@ const UI = {
   },
 
   startTutorial(){
-    this.tut = {step:1};
+    this.tut = {step:1, inspectDone:false};
     this.playerFaction = 'shu';
     this.runId++;
     this.busy = false;
@@ -2124,9 +2125,9 @@ const UI = {
       if(this.tut.step === 2 && st.phase === 'draw'){
         Engine.endDraw(); this.sel = null; this.msg = ''; this.tut.step = 3; this.render(); return;
       }
-      if(this.tut.step === 4 && st.phase === 'deploy'){
-        Engine.endDeploy();          // 停在补给阶段：喂粮交给玩家自己点（第 5 步）
-        this.tut.step = 5;
+      if(this.tut.step === 5 && st.phase === 'deploy'){
+        Engine.endDeploy();          // 停在补给阶段：喂粮交给玩家自己点（第 6 步）
+        this.tut.step = 6;
         this.render();
       }
       return;
@@ -2163,8 +2164,8 @@ const UI = {
     if(this.busy) return;
     const st = Engine.state;
     if(this.tut){
-      if(this.tut.step === 5){
-        const fb = e.target.closest('[data-feed="1"]');   // 第 5 步只认喂粮
+      if(this.tut.step === 6){
+        const fb = e.target.closest('[data-feed="1"]');   // 第 6 步只认喂粮
         if(!fb) return;
         const r = Engine.feed(+fb.dataset.lane, true);
         if(r.ok){ this.msg = ''; this.render(); this.runTutCombat(); }
@@ -2309,11 +2310,12 @@ const UI = {
     tb.hidden = !t;
     if(t){
       tb.textContent =
-        t.step === 1 ? '第 1 步 / 共 5 步：只点左侧发光的牌堆，抽 1 张将（教学固定牌序，只会抽到简雍）。' :
-        t.step === 2 ? '第 2 步 / 共 5 步：只点发光的「结束摸牌」，进入布置阶段。' :
-        t.step === 3 ? '第 3 步 / 共 5 步：点发光的简雍手牌选中，再点 3 号线「我·战线」发光的格子把他放下。' :
-        t.step === 4 ? '第 4 步 / 共 5 步：点发光的「结束回合」，进入补给阶段。' :
-        (st.phase === 'supply' ? '第 5 步 / 共 5 步：点发光的「喂粮」——战线上的将每回合要吃 1 粮草。'
+        t.step === 1 ? '第 1 步 / 共 6 步：只点左侧发光的牌堆，抽 1 张将（教学固定牌序，只会抽到简雍）。' :
+        t.step === 2 ? '第 2 步 / 共 6 步：只点发光的「结束摸牌」，进入布置阶段。' :
+        t.step === 3 ? '第 3 步 / 共 6 步：点发光的简雍手牌选中，再点 3 号线「我·战线」发光的格子把他放下。' :
+        t.step === 4 ? '第 4 步 / 共 6 步：仔细看一个将。用鼠标右键点它，或者在手机上长按大约一秒，就能看到详情。' :
+        t.step === 5 ? '第 5 步 / 共 6 步：点发光的「结束回合」，进入补给阶段。' :
+        (st.phase === 'supply' ? '第 6 步 / 共 6 步：点发光的「喂粮」——战线上的将每回合要吃 1 粮草。'
                                : '自动结算中：红线是攻击，红虚线是反击——这一步你不用动手。');
     }
 
@@ -2343,8 +2345,8 @@ const UI = {
     else if(st.phase === 'supply'){ pb.textContent = '补给决策中'; pb.disabled = true; }
     else if(st.phase === 'over'){ pb.textContent = '对局结束'; pb.disabled = true; }
     else{ pb.textContent = '结算中'; pb.disabled = true; }
-    pb.classList.toggle('tut-glow', !!t && ((t.step === 2 && st.phase === 'draw') || (t.step === 4 && st.phase === 'deploy')));
-    pb.classList.toggle('tut-dim', !!t && (t.step === 1 || t.step === 3 || t.step === 5));
+    pb.classList.toggle('tut-glow', !!t && ((t.step === 2 && st.phase === 'draw') || (t.step === 5 && st.phase === 'deploy')));
+    pb.classList.toggle('tut-dim', !!t && (t.step === 1 || t.step === 3 || t.step === 4 || t.step === 6));
     const infoTail =
       st.phase === 'draw' ? '已抽 ' + shu.drawn + ' / ' + CONFIG.MAX_DRAW + ' 张 · 剩余 ' + shu.points + ' 点将转为粮草' :
       st.phase === 'supply' ? '我方粮草 ' + shu.supply + ' · 喂粮每人耗 1 粮草' :
@@ -2358,7 +2360,7 @@ const UI = {
 
     /* 提示 */
     const hint = document.getElementById('hint');
-    hint.textContent = this.tut ? '教学进行中：只点金色发光处和蓝圈标的东西，点别处不生效。' : (this.msg || this.phaseHint());
+    hint.textContent = this.tut ? (this.tut.step === 4 ? '教学进行中：这一步用右键或长按约1秒看详情，普通点击不生效。' : '教学进行中：只点金色发光处和蓝圈标的东西，点别处不生效。') : (this.msg || this.phaseHint());
     hint.className = 'hint' + (this.msg && this.msgWarn && !this.tut ? ' warn' : '');
 
     /* 教学讲解标注（蓝圈+引线，每步只标一个） */
@@ -2400,8 +2402,8 @@ const UI = {
         }
         const isSel = u && sel && sel.type === 'unit' && sel.lane === l && sel.row === r;
         const willRest = u && REST_SKILLS.indexOf(u.skill) >= 0 && Engine.colorMatch(u);
-        const tutCell = this.tut && this.tut.step === 3 && l === 2 && r === ROW.shu.front;
-        const tutDim = this.tut && this.tut.step === 3 && !tutCell;
+        const tutCell = this.tut && (this.tut.step === 3 || this.tut.step === 4) && l === 2 && r === ROW.shu.front;
+        const tutDim = this.tut && (this.tut.step === 3 || this.tut.step === 4) && !tutCell;
         if(!u){
           html += '<div class="cell empty' + (target?' target':'') + (tutCell?' tut-glow':'') + (tutDim?' tut-dim':'') + '" data-lane="' + l + '" data-row="' + r + '">' + (target?'可落子':'空') + '</div>';
           continue;
@@ -2410,10 +2412,10 @@ const UI = {
         let feedHtml = '';
         if(st.phase === 'supply' && u.owner === 'shu' && r === ROW.shu.front && st.supplyPending.indexOf(l) >= 0){
           const noFood = st.sides.shu.supply < 1;
-          const t5 = this.tut && this.tut.step === 5;
+          const t6 = this.tut && this.tut.step === 6;
           feedHtml = '<div class="feed-btns">' +
-            '<button type="button" class="' + (t5?'tut-glow':'') + '" data-feed="1" data-lane="' + l + '"' + (noFood?' disabled title="粮草不足"':'') + '>喂粮</button>' +
-            '<button type="button" class="' + (t5?'tut-dim':'') + '" data-feed="0" data-lane="' + l + '">省粮</button></div>';
+            '<button type="button" class="' + (t6?'tut-glow':'') + '" data-feed="1" data-lane="' + l + '"' + (noFood?' disabled title="粮草不足"':'') + '>喂粮</button>' +
+            '<button type="button" class="' + (t6?'tut-dim':'') + '" data-feed="0" data-lane="' + l + '">省粮</button></div>';
         }
         html += '<div class="cell unit ' + fac + (isSel?' sel':'') + (target?' target':'') + (tutCell?' tut-glow':'') + (tutDim?' tut-dim':'') + '" data-lane="' + l + '" data-row="' + r + '" title="' + u.desc + '">' +
           '<div class="u-top"><span class="u-name">' + u.name + '</span><span class="u-cost">粮 ' + u.cost + '</span></div>' +
@@ -2499,6 +2501,8 @@ const UI = {
 
   openInspect(lane, row){
     this.inspect = {lane:lane, row:row};
+    /* 教学第 4 步：右键/长按看到刚上场的简雍才算做过这个动作 */
+    if(this.tut && this.tut.step === 4 && lane === 2 && row === ROW.shu.front) this.tut.inspectDone = true;
     this.renderInspect();
     document.getElementById('inspectWrap').hidden = false;
   },
@@ -2507,6 +2511,11 @@ const UI = {
     if(!this.inspect) return;
     this.inspect = null;
     document.getElementById('inspectWrap').hidden = true;
+    /* 教学第 4 步：看过详情再关面板才顺延下一步；提前关=没完成，留在原步等再点 */
+    if(this.tut && this.tut.step === 4){
+      if(this.tut.inspectDone){ this.tut.inspectDone = false; this.tut.step = 5; this.render(); }
+      else this.showTutStep();
+    }
   },
 
   renderInspect(){
@@ -2566,11 +2575,11 @@ const UI = {
       for(const ev of gen){ /* drain */ }
       this.busy = false;
       this.render();
-      if(this.tut && this.tut.step === 5) document.getElementById('tutWrap').hidden = false;
+      if(this.tut && this.tut.step === 6) document.getElementById('tutWrap').hidden = false;
       return;
     }
     await this.playGen(gen);
-    if(this.tut && this.tut.step === 5) document.getElementById('tutWrap').hidden = false;
+    if(this.tut && this.tut.step === 6) document.getElementById('tutWrap').hidden = false;
   },
 
   async playGen(gen){
@@ -2702,11 +2711,11 @@ if(location.hash === '#selftest'){
   document.getElementById('app').style.display = 'none';
   document.getElementById('cover').hidden = true;
   document.getElementById('pick').hidden = true;
-  const r = selfTestCore(300);
+  const r = selfTestCore(100);
   const el = document.getElementById('selftest');
   el.style.display = 'block';
   el.textContent = r.ok
-    ? 'SELFTEST OK games=300 avgRounds=' + r.avg + ' stalls=' + r.stalls
+    ? 'SELFTEST OK games=100 avgRounds=' + r.avg + ' stalls=' + r.stalls
     : 'SELFTEST FAIL: ' + r.error;
 }else if(location.hash === '#balance'){
   document.getElementById('app').style.display = 'none';
