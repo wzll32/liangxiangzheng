@@ -75,11 +75,12 @@
     animation:coverIn .6s .12s ease-out both;
   }
   .cover-btns{
-    position:relative;margin-top:38px;display:flex;gap:18px;justify-content:center;flex-wrap:wrap;
+    position:relative;margin-top:38px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap;
+    max-width:430px;margin-left:auto;margin-right:auto;
     animation:coverIn .6s .24s ease-out both;
   }
   .cover-btn{
-    min-width:180px;min-height:56px;padding:10px 30px;
+    min-width:196px;min-height:56px;padding:10px 22px;
     font-size:18px;font-weight:700;letter-spacing:6px;text-indent:6px;cursor:pointer;
     border-radius:6px;transition:transform .15s ease,box-shadow .15s ease,background .15s ease;
   }
@@ -87,10 +88,6 @@
   .cover-btn.ghost:hover{background:rgba(217,180,106,.1);transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,0,0,.4);}
   .cover-btn.solid{background:var(--gold);color:#14171c;border:1px solid var(--gold);}
   .cover-btn.solid:hover{background:#e6c47e;transform:translateY(-2px);box-shadow:0 8px 26px rgba(217,180,106,.25);}
-  .cover-foot{
-    position:relative;margin-top:36px;font-size:12.5px;color:var(--ink-dim);letter-spacing:1px;
-    animation:coverIn .6s .36s ease-out both;
-  }
   @keyframes coverIn{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
 
   /* ---------- 势力选择 ---------- */
@@ -297,6 +294,28 @@
   }
   @keyframes floatUp{0%{opacity:1;transform:translate(-50%,-100%)}100%{opacity:0;transform:translate(-50%,-220%)}}
   .cell.hit-flash{animation:hitFlash .6s ease-out;}
+  /* 技能效果：正面闪绿、负面闪紫，仿受击闪红 */
+  @keyframes fxFlashUp{
+    0%{border-color:#5fae7a;box-shadow:0 0 0 2px rgba(95,174,122,.9),0 0 14px rgba(95,174,122,.55);}
+    100%{box-shadow:0 0 0 0 rgba(95,174,122,0);}
+  }
+  @keyframes fxFlashDown{
+    0%{border-color:#8a63c9;box-shadow:0 0 0 2px rgba(138,99,201,.9),0 0 14px rgba(138,99,201,.55);}
+    100%{box-shadow:0 0 0 0 rgba(138,99,201,0);}
+  }
+  .pvp-wrap{
+    position:fixed;inset:0;z-index:60;background:rgba(8,10,13,.82);
+    display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px);
+  }
+  .pvp-wrap[hidden]{display:none;}
+  .pvp-card{
+    width:min(420px,88vw);padding:26px 24px;border-radius:14px;text-align:center;
+    background:#171b22;border:1px solid rgba(217,180,106,.55);box-shadow:0 0 24px rgba(0,0,0,.5);
+  }
+  .pvp-line1{margin:0 0 10px;font-size:18px;color:#d9b46a;font-weight:700;}
+  .pvp-line2{margin:0 0 18px;font-size:13px;line-height:1.7;color:#9aa2ad;}
+  .fx-flash-up{animation:fxFlashUp .3s ease-out;}
+  .fx-flash-down{animation:fxFlashDown .3s ease-out;}
   @keyframes hitFlash{
     0%{border-color:#e05545;box-shadow:0 0 0 2px rgba(224,85,69,.85),0 0 14px rgba(224,85,69,.5);}
     100%{box-shadow:0 0 0 0 rgba(224,85,69,0);}
@@ -358,6 +377,29 @@
 
   /* ---------- 手牌与牌堆 ---------- */
   #handRow{display:flex;gap:10px;align-items:stretch;margin-bottom:8px;min-height:142px;}
+  .net-chip{
+    font-size:12px; color:#8f96a3; border:1px solid rgba(255,255,255,.14);
+    border-radius:999px; padding:5px 10px; margin-right:8px;
+  }
+  .net-chip.on{ color:#5fae7a; border-color:rgba(95,174,122,.5); }
+  .net-card{
+    position:fixed; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:min(560px, 92vw); background:#181c23; border:1px solid rgba(255,255,255,.12);
+    border-radius:14px; padding:26px 24px; text-align:center; z-index:60;
+  }
+  .net-title{ font:700 22px/1.3 "Microsoft YaHei",sans-serif; color:#d9b46a; margin:0 0 10px; }
+  .net-sub{ font-size:14px; color:#a7adb8; margin:0 0 18px; line-height:1.7; }
+  .net-actions{ display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin:10px 0; }
+  .net-tip{ font-size:13px; color:#8f96a3; min-height:20px; margin:6px 0; line-height:1.7; word-break:break-all; }
+  .net-tip.ok{ color:#5fae7a; }
+  .net-tip.bad{ color:#e05545; }
+  .turn-timer{
+    font: 600 14px/1 ui-monospace, Consolas, monospace;
+    color: #d9b46a; border: 1px solid rgba(217,180,106,.5);
+    border-radius: 999px; padding: 6px 12px; margin-right: 10px;
+    background: rgba(217,180,106,.08); min-width: 92px; text-align: center;
+  }
+  .turn-timer.warn{ color:#e05545; border-color: rgba(224,85,69,.6); background: rgba(224,85,69,.1); }
   .deck-pile{
     width:118px;flex:none;border:1px dashed rgba(255,255,255,.25);border-radius:6px;
     background:var(--surface);padding:8px;text-align:center;
@@ -418,6 +460,22 @@
   ::-webkit-scrollbar-thumb{background:#3a4048;border-radius:5px;border:2px solid var(--bg);}
   ::-webkit-scrollbar-thumb:hover{background:var(--gold);}
   #log{scrollbar-width:thin;scrollbar-color:#3a4048 var(--bg);}
+
+  /* ---------- 技能效果色块 ---------- */
+  .fx-chip{
+    position:fixed;z-index:70;transform:translate(-50%,-50%);
+    padding:2px 7px;border-radius:5px;font-size:12px;font-weight:700;
+    pointer-events:none;animation:chipFloat .7s ease forwards;white-space:nowrap;
+  }
+  .fx-chip.up{background:rgba(95,174,122,.95);color:#08150d;box-shadow:0 0 12px rgba(95,174,122,.55);}
+  .fx-chip.down{background:rgba(138,99,201,.95);color:#0d0817;box-shadow:0 0 12px rgba(138,99,201,.55);}
+  @keyframes chipFloat{
+    0%{opacity:0;transform:translate(-50%,-30%) scale(.7);}
+    18%{opacity:1;transform:translate(-50%,-70%) scale(1.02);}
+    100%{opacity:0;transform:translate(-50%,-150%) scale(.95);}
+  }
+  .card.fx-up{box-shadow:inset 0 0 0 2px rgba(95,174,122,.85);}
+  .card.fx-down{box-shadow:inset 0 0 0 2px rgba(138,99,201,.85);}
 
   /* ---------- 自检输出 ---------- */
   #selftest{
@@ -515,16 +573,42 @@
     .cover-sub{font-size:13px;letter-spacing:1px;}
     .cover-btn{min-width:140px;min-height:52px;font-size:16px;}
     .cover-seal{right:14px;bottom:14px;width:52px;height:52px;font-size:16px;}
-    .cover-foot{font-size:12px;}
     #pick{padding:22px 0 12px;}
     .pick-cards{grid-template-columns:1fr;gap:12px;}
     .f-name{font-size:24px;}
     #tutBar{font-size:13px;padding:8px 10px;}
     .tut-text{font-size:14px;}
   }
+  .net-row{display:flex;gap:10px;align-items:center;justify-content:center;margin:12px 0;flex-wrap:wrap}
+  .net-input{width:150px;padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.18);
+    background:#1b1f26;color:#e8e4dc;font-size:18px;letter-spacing:4px;text-align:center;font-family:inherit}
+  .net-input::placeholder{letter-spacing:1px;font-size:14px;color:#8c929c}
+  .net-code{margin:6px 0 2px;font-size:30px;letter-spacing:10px;color:#d9b46a;font-weight:700;text-align:center}
+  #lockMask{position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;
+    background:rgba(206,212,220,.62);backdrop-filter:grayscale(.55) blur(1px);
+    color:#20252d;font-size:22px;font-weight:700;letter-spacing:2px;cursor:not-allowed}
+  #lockMask[hidden]{display:none}
 </style>
 </head>
 <body>
+<div id="pvpWrap" class="pvp-wrap" hidden>
+  <div class="pvp-card">
+    <p class="pvp-line1" id="pvpWho">轮到对方布置</p>
+    <p class="pvp-line2">把鼠标交给对面那位，点确定后由他操作；他看到的是自己那一侧的手牌。</p>
+    <button id="pvpOk" class="cover-btn solid" type="button">交给对方</button>
+  </div>
+</div>
+<div id="netDown" class="pvp-wrap" hidden>
+  <div class="pvp-card">
+    <p class="pvp-line1">联机要用完整版</p>
+    <p class="pvp-line2">联机对战需要一台一直开着的服务器，这里只能放静态页面，所以点联机连不上。</p>
+    <p class="pvp-line2">想联机就用下面这个地址打开，手机电脑都行。</p>
+    <p class="pvp-line2" style="color:#d9b46a;font-weight:700;letter-spacing:.5px;margin-top:-6px">62.234.74.74:8080</p>
+    <p class="pvp-line2">留在这里可以打电脑，也可以两人同屏轮流玩。</p>
+    <button id="netDownGo" class="cover-btn solid" type="button" style="margin-bottom:10px">去联机版</button>
+    <button id="netDownOk" class="cover-btn ghost" type="button">留在这里玩本地双人</button>
+  </div>
+</div>
 <div id="selftest"></div>
 
 <section id="balance" hidden>
@@ -543,12 +627,32 @@
     <div class="cover-lanes"></div>
     <div class="cover-seal" aria-hidden="true"><span>两</span><span>相</span><span>争</span><span>印</span></div>
     <h1 class="cover-title">两相争</h1>
-    <p class="cover-sub">真人打电脑的三国战线卡牌 · 一局十分钟</p>
+    <p class="cover-sub">三国战线卡牌 · 一局十分钟 · 可打电脑，也可两人同屏</p>
     <div class="cover-btns">
       <button id="coverTut" class="cover-btn ghost" type="button">教学</button>
       <button id="coverBattle" class="cover-btn solid" type="button">对战</button>
+      <button id="coverPvp" class="cover-btn ghost" type="button">双人同屏</button>
+      <button id="coverNet" class="cover-btn ghost" type="button">联机对战</button>
     </div>
-    <p class="cover-foot">本版本可玩势力：蜀汉 · 曹魏 · 孙权军 · 董卓军</p>
+  </div>
+</section>
+
+<section id="netWrap" hidden>
+  <div class="net-card">
+    <h2 class="net-title">联机对战</h2>
+    <p class="net-sub" id="netSub">建房的人当房主，把房间号告诉对方，对方输房间号进来。</p>
+    <div class="net-row">
+      <button id="netHost" class="btn primary" type="button">创建房间（我当房主）</button>
+    </div>
+    <p class="net-code" id="netCode" hidden></p>
+    <div class="net-row">
+      <input id="netRoom" class="net-input" type="text" inputmode="numeric" maxlength="6" placeholder="房间号">
+      <button id="netJoin" class="btn" type="button">加入房间</button>
+    </div>
+    <p class="net-tip" id="netTip"></p>
+    <div class="net-actions">
+      <button id="netBack" class="btn" type="button">返回封面</button>
+    </div>
   </div>
 </section>
 
@@ -571,6 +675,8 @@
     <span id="roundLabel" class="round-label">第 1 回合</span>
     <span class="dice-wrap">颜色骰 <span id="diceChip" class="dice-chip">—</span></span>
     <span class="grow"></span>
+    <span id="netChip" class="net-chip" hidden>联机中</span>
+    <span id="turnTimer" class="turn-timer" hidden>思考 99 秒</span>
     <button id="speedBtn" class="btn" type="button" title="动画速度">速度 ×1</button>
     <button id="restartBtn" class="btn" type="button" title="用当前势力再打一局">重开·同势力</button>
     <button id="homeBtn" class="btn home" type="button" title="回到封面，重新选势力（本局作废）">回首页·换势力</button>
@@ -582,7 +688,7 @@
     <section id="statsRow">
       <div class="hero-panel" id="weiPanel">
         <div class="hero-hp" id="weiHp">40</div>
-        <div class="hero-title wei-t">曹魏主帅</div>
+        <div class="hero-title wei-t" id="weiTitle">主帅</div>
         <div class="caps" id="weiCaps"></div>
       </div>
       <div class="mid-panel">
@@ -591,7 +697,7 @@
       </div>
       <div class="hero-panel right" id="shuPanel">
         <div class="hero-hp" id="shuHp">40</div>
-        <div class="hero-title shu-t">蜀汉主帅</div>
+        <div class="hero-title shu-t" id="shuTitle">主帅</div>
         <div class="caps" id="shuCaps"></div>
       </div>
     </section>
@@ -672,6 +778,7 @@ const CONFIG = {
   DRAW_COST: 3,         // 抽 1 将消耗的资源点
   MAX_DRAW: 4,          // 每回合最多抽将数
   START_SUPPLY: 6,      // 开局自带粮草
+  TURN_SECONDS: 99,     // 双人模式每回合思考秒数
   LANES: 5              // 战线数
 };
 
@@ -716,14 +823,14 @@ const CARD_POOL = {
     {name:'甘宁',   cost:3, atk:4, hp:5, color:null,     skill:'ganning',   desc:'优先打敌方本营的将，本营没将才打战线'},
     {name:'太史慈', cost:4, atk:5, hp:4, color:null,     skill:'taishici',  desc:'被攻击打死的那一次，反击伤害等于对方这次造成的伤害'},
     {name:'凌统',   cost:3, atk:2, hp:3, color:null,     skill:'lingtong',  desc:'队友阵亡时自己阵亡，把该队友以3血复活在原格'},
-    {name:'孙尚香', cost:2, atk:1, hp:1, color:null,     skill:'sunshangxiang', desc:'攻击前，给血量最低的一名队友+2血（不包括自己）'},
+    {name:'孙尚香', cost:2, atk:1, hp:1, color:null,     skill:'sunshangxiang', desc:'结算开始：给血量最低的一名队友+2血（不含自己），本营也发动'},
     {name:'韩当',   cost:2, atk:1, hp:2, color:'blue',   skill:'handang',   desc:'不攻击；每回合自己+3血'},
     {name:'鲁肃',   cost:3, atk:1, hp:4, color:'red',    skill:'lusu',      desc:'不攻击；每回合己方+5粮草，对方+1'},
     {name:'程普',   cost:2, atk:1, hp:4, color:null,     skill:'mirror',    desc:'反击伤害等于攻击方本该造成的反击伤害（含对方反击技）'}
   ],
   dong: [
     {name:'吕布',   cost:12, atk:9, hp:12, color:null,    skill:'lvbu',      desc:'本次攻击若击杀对方，再攻击一次（只追加一次，不连锁）'},
-    {name:'华雄',   cost:5, atk:4, hp:12, color:null,    skill:'huaxiong',  desc:'每回合开始扣自己2血'},
+    {name:'华雄',   cost:6, atk:4, hp:12, color:null,    skill:'huaxiong',  desc:'每回合开始扣自己2血'},
     {name:'李儒',   cost:5, atk:1, hp:6, color:'red',    skill:'liru',      desc:'结算开始：己方在场将-1血、敌方在场将-2血；敌主帅再掉自己本回合已损失的血'},
     {name:'张济',   cost:5, atk:3, hp:3, color:null,     skill:'zhangji',   desc:'死亡后扣2粮草由张绣在原格占位，粮草不够就不上（张绣：单次受到的伤害-1）'},
     {name:'徐荣',   cost:4, atk:2, hp:5, color:null,     skill:'xurong',    desc:'每受到一次伤害，攻击力永久+1'},
@@ -766,9 +873,20 @@ const DICE = [
   {id:'blue',   name:'蓝', css:'#5a7fa8'}
 ];
 
+/* ---------- 可播种随机：联机/回放两端算得一模一样 ---------- */
+let _rngState = 0;
+function seedRng(seed){ _rngState = ((seed >>> 0) || 1) >>> 0; }
+function rnd(){
+  _rngState = (_rngState + 0x6D2B79F5) >>> 0;
+  let t = _rngState;
+  t = Math.imul(t ^ (t >>> 15), t | 1);
+  t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+}
+function rndInt(n){ return Math.floor(rnd() * n); }
 function shuffle(a){
   for(let i=a.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1));
+    const j=rndInt(i+1);
     const t=a[i]; a[i]=a[j]; a[j]=t;
   }
   return a;
@@ -783,13 +901,60 @@ const Engine = {
   deferCombat: false,   // true 时补给结束后不自动结算，交由调用方（UI 动画）驱动 combatGen
   factionOf: {shu:'shu', wei:'wei'},   // 槽位→势力：shu 槽永远是玩家，wei 槽永远是电脑
   tutorialPlace: false,   // 教学关第二步允许在摸牌阶段上场（仅教学流程）
+  fxPending: [],          // 待界面播报的技能效果（紫=负面/绿=正面）
 
-  newGame(playerFaction, enemyFaction){
+  /* ---- 技能效果播报：对比技能前后的数值，产出紫（负面）/绿（正面）色块事件 ---- */
+  fxSnap(){
+    const st = this.state, out = {u:{}};
+    for(let l=0;l<CONFIG.LANES;l++){
+      for(let r=0;r<4;r++){
+        const u = st.board[l][r];
+        if(u) out.u[l+','+r] = {hp:u.hp, atk:u.atk};
+      }
+    }
+    out.hero = {shu: st.sides.shu.hero, wei: st.sides.wei.hero};
+    out.supply = {shu: st.sides.shu.supply, wei: st.sides.wei.supply};
+    return out;
+  },
+
+  fxDiff(before){
+    const st = this.state;
+    const push = (kind, side, lane, row, text) => {
+      this.fxPending.push({kind, side, lane, row, text});
+    };
+    for(let l=0;l<CONFIG.LANES;l++){
+      for(let r=0;r<4;r++){
+        const u = st.board[l][r];
+        const key = l + ',' + r;
+        const b = before.u[key];
+        if(!u || !b) continue;
+        const side = r <= 1 ? 'wei' : 'shu';
+        const dHp = u.hp - b.hp;
+        const dAtk = u.atk - b.atk;
+        if(dHp < 0) push('debuff', side, l, r, String(dHp));
+        else if(dHp > 0) push('buff', side, l, r, '+' + dHp);
+        if(dAtk > 0) push('buff', side, l, r, '攻+' + dAtk);
+        else if(dAtk < 0) push('debuff', side, l, r, '攻' + dAtk);
+      }
+    }
+    for(const side of ['shu','wei']){
+      const dh = st.sides[side].hero - before.hero[side];
+      if(dh > 0) push('buff', side, -1, -1, '血+' + dh);
+      else if(dh < 0) push('debuff', side, -1, -1, String(dh));
+      const ds = st.sides[side].supply - before.supply[side];
+      if(ds > 0) push('buff', side, -2, -1, '粮+' + ds);
+      else if(ds < 0) push('debuff', side, -2, -1, '粮' + ds);
+    }
+  },
+
+  newGame(playerFaction, enemyFaction, seed){
     // 槽位→势力：shu 槽永远是玩家/先手，wei 槽永远是电脑/后手；旧调用行为不变
     const pf = playerFaction || 'shu';
     const ef = enemyFaction || (pf === 'wei' ? 'shu' : 'wei');
     this.factionOf = {shu:pf, wei:ef};
     this.tutorialPlace = false;
+    this.seed = (seed == null) ? ((Date.now() ^ 0x5F3759DF) >>> 0) : (seed >>> 0);
+    seedRng(this.seed);
     this.state = {
       round: 1,
       phase: 'prepare',           // prepare / draw / deploy / supply / combat / over
@@ -849,10 +1014,12 @@ const Engine = {
   check(){ if(this.audit) this.audit(this.state); },
 
   /* ---- 阶段 1+2：准备（自动掷骰）并进入摸牌 ---- */
-  startTurn(){
+  startTurn(side){
+    side = side || 'shu';
     const st = this.state;
-    st.color = DICE[Math.floor(Math.random()*DICE.length)];
-    const s = st.sides.shu;
+    st.color = DICE[rndInt(DICE.length)];
+    st.active = side;
+    const s = st.sides[side];
     s.points = CONFIG.POINTS_PER_TURN;
     s.drawn = 0;
     st.phase = 'draw';
@@ -878,7 +1045,7 @@ const Engine = {
       s.deck = this.buildDeck(side);
       this.log(this.sideName(side) + '方牌库已空，循环重洗', 'sys');
     }
-    const i = Math.floor(Math.random()*s.deck.length);
+    const i = rndInt(s.deck.length);
     const t = s.deck.splice(i,1)[0];
     s.points -= CONFIG.DRAW_COST;
     s.drawn++;
@@ -890,10 +1057,11 @@ const Engine = {
   },
 
   /* ---- 结束摸牌：剩余点数全部转粮草 ---- */
-  endDraw(){
+  endDraw(side){
+    side = side || 'shu';
     const st = this.state;
     if(st.phase !== 'draw') return {ok:false, reason:'现在不是摸牌阶段'};
-    const s = st.sides.shu;
+    const s = st.sides[side];
     if(s.points > 0){
       s.supply += s.points;
       this.log('摸牌结束，剩余 ' + s.points + ' 点转为粮草', 'sys');
@@ -909,7 +1077,7 @@ const Engine = {
   /* ---- 布置：上场 ---- */
   playCard(side, handIdx, lane, row){
     const st = this.state, s = st.sides[side];
-    if(side === 'shu' && st.phase !== 'deploy' && !this.tutorialPlace) return {ok:false, reason:'现在不是布置阶段'};
+    if(side === (st.active || 'shu') && st.phase !== 'deploy' && !this.tutorialPlace) return {ok:false, reason:'现在不是布置阶段'};
     const u = s.hand[handIdx];
     if(!u) return {ok:false, reason:'无效的手牌'};
     if(row !== ROW[side].home && row !== ROW[side].front) return {ok:false, reason:'只能布置在己方两行'};
@@ -926,7 +1094,7 @@ const Engine = {
   /* ---- 布置：同线 本营↔战线 移动，免费、目标格必须为空 ---- */
   moveUnit(side, lane, fromRow, toRow){
     const st = this.state;
-    if(side === 'shu' && st.phase !== 'deploy') return {ok:false, reason:'现在不是布置阶段'};
+    if(side === (st.active || 'shu') && st.phase !== 'deploy') return {ok:false, reason:'现在不是布置阶段'};
     const own = ROW[side];
     if(fromRow !== own.home && fromRow !== own.front) return {ok:false, reason:'起点不在己方行'};
     if(toRow !== own.home && toRow !== own.front) return {ok:false, reason:'不能换线：只能在本营与战线之间移动'};
@@ -942,41 +1110,43 @@ const Engine = {
   },
 
   /* ---- 阶段 4：补给 ---- */
-  endDeploy(){
+  endDeploy(side){
+    side = side || 'shu';
     const st = this.state;
     if(st.phase !== 'deploy') return {ok:false, reason:'现在不是布置阶段'};
     st.phase = 'supply';
     st.supplyPending = [];
     for(let l=0; l<CONFIG.LANES; l++){
-      if(st.board[l][ROW.shu.front]) st.supplyPending.push(l);
+      if(st.board[l][ROW[side].front]) st.supplyPending.push(l);
     }
     if(st.supplyPending.length === 0){
       this.log('我方战线无将，无需补给', 'sys');
-      this.afterSupply();
+      this.afterSupply(side);
     }
     return {ok:true};
   },
 
-  feed(lane, fed){
+  feed(lane, fed, side){
+    side = side || 'shu';
     const st = this.state;
     if(st.phase !== 'supply') return {ok:false, reason:'现在不是补给阶段'};
     const idx = st.supplyPending.indexOf(lane);
     if(idx < 0) return {ok:false, reason:'该战线无需补给决策'};
-    const u = st.board[lane][ROW.shu.front];
-    const s = st.sides.shu;
+    const u = st.board[lane][ROW[side].front];
+    const s = st.sides[side];
     if(fed){
       if(s.supply < 1) return {ok:false, reason:'粮草不足，无法喂粮'};
       s.supply--;
       this.log('补给：' + u.name + ' 喂粮 -1 粮草', 'supply');
     }else{
-      this.dealToUnit(lane, ROW.shu.front, 1, {kind:'supply'});
+      this.dealToUnit(lane, ROW[side].front, 1, {kind:'supply'});
       this.log('补给：' + u.name + ' 挨饿 -1 血', 'supply');
-      if(u.hp <= 0) this.kill(lane, ROW.shu.front);
+      if(u.hp <= 0) this.kill(lane, ROW[side].front);
     }
     const i2 = st.supplyPending.indexOf(lane);   // kill 可能已同步移除本线，重算防误删
     if(i2 >= 0) st.supplyPending.splice(i2, 1);
     this.check();
-    if(st.supplyPending.length === 0) this.afterSupply();
+    if(st.supplyPending.length === 0) this.afterSupply(side);
     return {ok:true};
   },
   /* ---- 阵亡：立即离场，按卡面原始数值重置后洗回己方牌库底（所有加成清空） ----
@@ -988,9 +1158,9 @@ const Engine = {
     st.board[lane][row] = null;
     /* 补给待决策同步：阵亡的战线立即移出队列，避免死格卡在补给阶段 */
     const pi = st.supplyPending.indexOf(lane);
-    if(pi >= 0 && row === ROW.shu.front){
+    if(pi >= 0 && row === ROW[u.owner].front){
       st.supplyPending.splice(pi, 1);
-      if(st.phase === 'supply' && st.supplyPending.length === 0) this.afterSupply();
+      if(st.phase === 'supply' && st.supplyPending.length === 0) this.afterSupply(u.owner);
     }
     /* 贾诩【死咒】：死亡时双方在场将各-2血、双方主帅各-2血 */
     if(u.skill === 'jiaxu'){
@@ -1081,7 +1251,7 @@ const Engine = {
     }
     u.hp -= amt;
     /* 周泰：被反击致死时一成概率不死留1血 */
-    if(u.skill === 'zhoutai' && u.hp <= 0 && src && src.kind === 'counter' && Math.random() < 0.1){
+    if(u.skill === 'zhoutai' && u.hp <= 0 && src && src.kind === 'counter' && rnd() < 0.1){
       u.hp = 1;
       this.skillLog(u, '反击致死，一成概率留1血');
     }
@@ -1158,6 +1328,7 @@ const Engine = {
           u.stoodRound = st.round;
           u.noAttack = false;
           if(!this.colorMatch(u)) continue;   // 颜色不对：技能不发动，只按卡面数值打
+          const __fxBefore = this.fxSnap();
           switch(u.skill){
             case 'wounded':
               this.syncWounded(u);
@@ -1233,6 +1404,21 @@ const Engine = {
               this.dealToUnit(l, r, 2, {kind:'skill', side:u.owner, unit:u});
               if(u.hp <= 0){ this.log(u.name + ' 自残阵亡（战线' + (l+1) + '）', 'death'); this.kill(l, r); }
               break;
+            case 'sunshangxiang': {
+              let low = null;
+              for(let ll=0; ll<CONFIG.LANES; ll++){
+                for(const rr of rows){
+                  const f = st.board[ll][rr];
+                  if(f && f.id !== u.id && (!low || f.hp < low.hp)) low = f;
+                }
+              }
+              if(low && low.hp < low.maxHp){
+                low.hp = Math.min(low.maxHp, low.hp + 2);
+                this.syncWounded(low);
+                this.skillLog(u, low.name + ' +2血');
+              }
+              break;
+            }
             case 'handang':
               u.noAttack = true; u.hp += 3; u.maxHp += 3;
               this.skillLog(u, '自己+3血，本回合不攻击');
@@ -1269,6 +1455,7 @@ const Engine = {
               break;
             }
           }
+          this.fxDiff(__fxBefore);
         }
       }
     }
@@ -1278,28 +1465,43 @@ const Engine = {
   /* ---- 阶段 5：结算（站立技能 → 我方 → 电脑），首回合不打 ----
    * 核心为生成器：在关键节点 yield「演示提示」，UI 按提示播动画并逐步推进；
    * 同步包装直接 drain，自检与动画模式走同一份规则代码。 */
-  beginCombat(){
-    for(const ev of this.combatGen()){ /* drain */ }
+  beginCombat(side){
+    for(const ev of this.combatGen(side || this.combatSide || 'shu')){ /* drain */ }
   },
 
-  afterSupply(){
+  afterSupply(side){
+    side = side || 'shu';
     if(this.state.phase !== 'supply') return;   // 防止死亡钩子提前结算后重复进入
+    this.combatSide = side;
     if(this.deferCombat){ this.state.phase = 'combatReady'; }
-    else this.beginCombat();
+    else this.beginCombat(side);
   },
 
-  *combatGen(){
+  *combatGen(side){
+    side = side || 'shu';
     const st = this.state;
     st.phase = 'combat';
     this.standingPhase();
+    if(this.fxPending.length){ yield {t:'skillFx', list: this.fxPending.splice(0)}; }
     yield {t:'stand'};
     if(st.round === 1){
       this.log('首回合双方按兵不动，未发起攻击', 'sys');
       yield {t:'rest'};
     }else{
-      yield* this.resolveSideGen('shu');
+      yield* this.resolveSideGen(side);
     }
-    if(!st.winner) yield* this.aiTurnGen();
+    // 双人同屏：打完就交接，谁打完谁把设备递过去
+    if(this.pvp && !st.winner){
+      st.phase = 'handover';
+      st.supplyPending = [];
+      this.check();
+      const nextSide = (side === 'shu') ? 'wei' : 'shu';
+      this.handoverTo = nextSide;
+      this.log(nextSide === 'wei' ? '—— 交接：轮到对方布置 ——' : '—— 交接：轮到先手方开始第 ' + (st.round + 1) + ' 回合 ——', 'sys');
+      yield {t:'pvpHandover', next: nextSide};
+      return;
+    }
+    if(!st.winner && !this.pvp) yield* this.aiTurnGen();
     this.endRound();
     yield {t:'turnEnd'};
   },
@@ -1351,22 +1553,6 @@ const Engine = {
     const aRow = ROW[atkSide].front;
     const dF = ROW[defSide].front, dH = ROW[defSide].home;
 
-    /* 孙尚香【弓腰】：攻击前给血量最低队友+2血（不含自己） */
-    if(a.skill === 'sunshangxiang'){
-      let low = null;
-      for(let ll=0; ll<CONFIG.LANES; ll++){
-        for(const rr of [ROW[atkSide].front, ROW[atkSide].home]){
-          const f = st.board[ll][rr];
-          if(f && f.id !== a.id && (!low || f.hp < low.hp)) low = f;
-        }
-      }
-      if(low && low.hp < low.maxHp){
-        low.hp = Math.min(low.maxHp, low.hp + 2);
-        this.syncWounded(low);
-        this.skillLog(a, low.name + ' +2血');
-      }
-    }
-
     /* 周瑜【赤壁】：攻击前敌方所有战线将掉1血，不触发反击 */
     if(a.skill === 'zhouyu' && this.colorMatch(a)){
       this.skillLog(a, '攻击前敌方所有战线将掉1血');
@@ -1397,7 +1583,7 @@ const Engine = {
         const ts = [];
         for(let ll=0; ll<CONFIG.LANES; ll++){ if(st.board[ll][dF]) ts.push(ll); }
         if(ts.length){
-          const ll = ts[Math.floor(Math.random()*ts.length)];
+          const ll = ts[rndInt(ts.length)];
           const fn = st.board[ll][dF].name;
           yield {t:'attack', lane:ll, from:aRow, to:dF};
           this.dealToUnit(ll, dF, 1, {kind:'skill', side:atkSide, unit:a});
@@ -1619,6 +1805,7 @@ const Engine = {
     s.points = 0;
     yield* this.aiDeployGen('wei');
     this.standingPhase('wei');   // 新上场的魏将补跑站立技能（已跑过的跳过）
+    if(this.fxPending.length){ yield {t:'skillFx', list: this.fxPending.splice(0)}; }
     yield {t:'stand'};
     // 补给：按血量从低到高优先喂粮，本营不吃粮
     const fronts = [];
@@ -1844,8 +2031,253 @@ async function runBalance(games, progressEl, bodyEl){
 }
 
 /* ============================================================
+ * 联机 / 回放：统一操作入口 + 快照 + 回放
+ * 目的：所有会改变局面的动作都从这里进；联机时只传 action，不传 state。
+ * ============================================================ */
+Engine.net = { enabled: false, turn: 'shu', log: [] };
+
+const ACTIONS = {
+  startTurn: { turn: true, run: () => Engine.startTurn() },
+  drawOne:   { turn: true, run: a => Engine.drawOne(a.side || 'shu') },
+  endDraw:   { turn: true, run: () => Engine.endDraw() },
+  playCard:  { turn: true, run: a => Engine.playCard(a.side || 'shu', a.handIdx, a.lane, a.row) },
+  moveUnit:  { turn: true, run: a => Engine.moveUnit(a.side || 'shu', a.lane, a.fromRow, a.toRow) },
+  endDeploy: { turn: true, run: () => Engine.endDeploy() },
+  feed:      { turn: true, run: a => Engine.feed(a.lane, a.fed) },
+  endRound:  { turn: true, run: () => Engine.endRound() },
+  aiTurn:    { turn: false, run: () => Engine.aiTurn() }
+};
+
+Engine.applyAction = function (action, actor) {
+  const st = this.state;
+  if (!st) return { ok: false, error: 'no_game' };
+  if (st.winner) return { ok: false, error: 'game_over' };
+  const spec = action && ACTIONS[action.type];
+  if (!spec) return { ok: false, error: 'unknown_action' };
+  const who = actor || 'shu';
+  if (this.net.enabled && spec.turn && this.net.turn !== who) {
+    return { ok: false, error: 'not_your_turn' };
+  }
+  const result = spec.run(action);
+  if (this.net.enabled) this.net.log.push({ actor: who, action, round: st.round });
+  return { ok: true, result };
+};
+
+Engine.snapshot = function () {
+  return JSON.stringify({ seed: this.seed, factionOf: this.factionOf, state: this.state });
+};
+
+Engine.restore = function (json) {
+  const snap = typeof json === 'string' ? JSON.parse(json) : json;
+  this.factionOf = snap.factionOf;
+  this.seed = snap.seed;
+  this.state = snap.state;
+  return this.state;
+};
+
+// 用种子 + 操作序列复原整局（回放 / 反作弊 / 断线对账）
+Engine.replay = function (seed, playerFaction, enemyFaction, actions) {
+  this.newGame(playerFaction, enemyFaction, seed);
+  for (const it of actions || []) this.applyAction(it.action, it.actor);
+  return this.state;
+};
+
+/* ============================================================
  * 界面：只负责渲染，以及把点击翻译成 Engine 调用
  * ============================================================ */
+/* ============================================================
+ * 局域网联机（零依赖，SSE + POST）
+ *   房主：唯一算局面的一方，把 state 推给客人
+ *   客人：点击只发操作，收到 state 就照着画
+ * ============================================================ */
+const FACTION_NAME = { shu:'蜀汉', wei:'曹魏', wu:'孙权军', dong:'董卓军' };
+
+const NET = {
+  mode: null,              // 'host' | 'guest'
+  started: false,          // 房主点「开战」后才开始推局面
+  hostSide: 'shu',
+  guestSide: 'wei',
+  hostFaction: null,       // 房主选的势力
+  guestFaction: null,      // 对手选的势力
+  awaitingPick: false,     // 等对手选势力
+  sid: Math.random().toString(36).slice(2, 10),
+  room: null,              // 房间号（4 位数字）；null 表示还没建房/进房
+  es: null,
+  withRoom(p){
+    if(!this.room) return p;
+    return p + (p.indexOf('?') >= 0 ? '&' : '?') + 'room=' + encodeURIComponent(this.room);
+  },
+  pushTimer: null,
+  panel(show){ document.getElementById('netWrap').hidden = !show; },
+  tip(text, cls){
+    const el = document.getElementById('netTip');
+    if(!el) return;
+    el.className = 'net-tip' + (cls ? ' ' + cls : '');
+    el.textContent = text || '';
+  },
+  post(path, obj){
+    return fetch(this.withRoom(path), {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(obj)
+    }).catch(function(){ return null; });
+  },
+  isFile(){
+    return location.protocol === 'file:';
+  },
+  probe(){
+    /* 探一下有没有本地服务；顺带拿手机该开的地址 */
+    return fetch(this.withRoom('ping'), { cache: 'no-store' })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .catch(function(){ return null; });
+  },
+  showPeers(p){
+    const el = document.getElementById('netChip');
+    if(!el) return;
+    if(!this.mode){ el.hidden = true; return; }
+    el.hidden = false;
+    const okAll = (p && p.hosts > 0 && p.guests > 0);
+    el.classList.toggle('on', !!okAll);
+    el.textContent = '联机 · 房主 ' + ((p && p.hosts) || 0) + ' · 客人 ' + ((p && p.guests) || 0);
+  },
+  connect(role){
+    this.mode = role;
+    if(this.es) { try{ this.es.close(); }catch(e){} }
+    const es = new EventSource(this.withRoom('events?sid=' + encodeURIComponent(this.sid) + '&role=' + role));
+    this.es = es;
+    const self = this;
+    es.addEventListener('open', function(){
+      self.tip(role === 'host' ? '房间已开好，等对方连进来…' : '已连接，等待房主开局…', 'ok');
+    });
+    es.addEventListener('peers', function(e){
+      let p = null;
+      try{ p = JSON.parse(e.data); }catch(err){ return; }
+      self.showPeers(p);
+      if(self.mode === 'host' && self._waitingGuest){
+        if(p.guests > 0){ self._waitingGuest = false; self.tip('对方已经连进来了，可以开局了。', 'ok'); }
+        else self.tip('房间已开好，等对方连进来…（手机打开上面那个地址，点「加入房间」）');
+      }
+    });
+    es.addEventListener('host', function(){
+      if(self.mode === 'guest') self.tip('找到房主了，等他开局…', 'ok');
+    });
+    es.addEventListener('snap', function(e){
+      if(self.mode !== 'guest') return;
+      let msg = null;
+      try{ msg = JSON.parse(e.data); }catch(err){ return; }
+      self.applySnap(msg);
+    });
+    es.addEventListener('say', function(e){
+      let msg = null;
+      try{ msg = JSON.parse(e.data); }catch(err){ return; }
+      self.onSay(msg);
+    });
+    es.addEventListener('act', function(e){
+      if(self.mode !== 'host') return;
+      let msg = null;
+      try{ msg = JSON.parse(e.data); }catch(err){ return; }
+      self.onGuestAction(msg);
+    });
+    es.addEventListener('error', function(){
+      self.tip('连接断了，正在重连…（检查是不是还在同一个 WiFi）', 'bad');
+    });
+  },
+  say(obj){
+    return this.post('say', obj);
+  },
+  schedulePush(){
+    if(this.mode !== 'host') return;
+    const self = this;
+    if(this.pushTimer) return;
+    this.pushTimer = setTimeout(function(){ self.pushTimer = null; self.pushNow(); }, 60);
+  },
+  pushNow(){
+    if(this.mode !== 'host' || !Engine.state || !this.started) return;
+    if(typeof UI !== 'undefined' && UI.busy) return;      // 结算动画中不推半截局面
+    const guestMe = this.guestSide;   // 客人身份固定
+    this.post('sync', { state: Engine.state, factionOf: Engine.factionOf, me: guestMe,
+                        pvp: !!Engine.pvp, started: true, round: Engine.state.round });
+  },
+  applySnap(msg){
+    if(!msg) return;
+    if(!msg.started || !msg.state){
+      this.tip('房主还没开局，等他一开局你这边会自动进去…', 'ok');
+      return;
+    }
+    Engine.state = msg.state;
+    if(msg.factionOf) Engine.factionOf = msg.factionOf;
+    Engine.pvp = !!msg.pvp;
+    UI.me = msg.me || 'shu';
+    UI.sel = null;
+    UI.msg = '';
+    UI.showScreen('game');
+    UI.render();
+
+  },
+  onSay(msg){
+    if(!msg || !msg.type) return;
+    if(msg.type === 'pickask' && this.mode === 'guest'){
+      this.hostFaction = msg.hostFaction;
+      UI.pick.hostFaction = msg.hostFaction;
+      UI.pick.mine = null;
+      UI.pick.enemy = null;
+      UI.pick.netPick = true;
+      UI.pickWarn = '';
+      UI.showScreen('pick');
+      this.tip('房主选的是「' + (FACTION_NAME[msg.hostFaction] || msg.hostFaction) + '」，请选你自己的势力。', 'ok');
+      return;
+    }
+    if(msg.type === 'pickdone' && this.mode === 'host'){
+      this.guestFaction = msg.faction;
+      this.awaitingPick = false;
+      UI.startBattle(this.hostFaction, msg.faction);
+      this.tip('对手选了「' + (FACTION_NAME[msg.faction] || msg.faction) + '」，开局了。', 'ok');
+      return;
+    }
+  },
+  onGuestAction(msg){
+    if(!msg || !msg.op) return;
+    if(msg.op === '__pick'){               // 选势力在开局之前，先处理
+      if(this.mode === 'host' && msg.faction){
+        this.onSay({ type: 'pickdone', faction: msg.faction });
+      }
+      return;
+    }
+    let st = Engine.state;
+    if(!st || !this.started) return;
+    if(msg.actor && st.active && msg.actor !== st.active){
+      Engine.log('对方的那次操作已忽略（现在不是他的回合）', 'sys');
+      UI.render();
+      this.pushNow();
+      return;
+    }
+    const fn = Engine[msg.op];
+    if(typeof fn !== 'function') return;
+    try{
+      fn.apply(Engine, msg.args || []);
+    }catch(e){
+      Engine.log('操作失败：' + e.message, 'sys');
+    }
+    UI.render();
+    this.schedulePush();
+    if(typeof UI !== 'undefined' && UI.maybeRunCombat) UI.maybeRunCombat();   // 客人的回合也要在房主这边结算
+  },
+  /* 客人把点击变成消息发出去，本地不改状态 */
+  installGuestShim(){
+    ['drawOne', 'endDraw', 'endDeploy', 'playCard', 'moveUnit', 'feed'].forEach(function(op){
+      const orig = Engine[op];
+      if(!orig || orig.__netShim) return;
+      const shim = function(){
+        const args = Array.prototype.slice.call(arguments);
+        NET.post('act', {op: op, args: args, actor: UI.me});
+        return {ok: true};
+      };
+      shim.__netShim = true;
+      Engine[op] = shim;
+    });
+  }
+};
+
 const UI = {
   sel: null,          // {type:'hand',idx} 或 {type:'unit',lane,row}
   msg: '',            // 临时提示（非法操作等）
@@ -1857,6 +2289,8 @@ const UI = {
   screen: 'cover',    // cover / pick / game
   playerFaction: 'shu',
   enemyFaction: 'wei',
+  me: 'shu',          // 当前由谁操作（双人同屏时会在双方之间切换）
+  pvp: false,         // 双人同屏模式
   pick: {mine:null, enemy:null},
   pickWarn: '',
   tut: null,          // 教学关状态 {step:1..5}
@@ -1895,11 +2329,110 @@ const UI = {
     }, true);
     document.getElementById('coverTut').addEventListener('click', function(){ self.startTutorial(); });
     document.getElementById('coverBattle').addEventListener('click', function(){
+      self.pvp = false; Engine.pvp = false;
       self.pick = {mine:null, enemy:null}; self.pickWarn = ''; self.showScreen('pick');
+    });
+    document.getElementById('coverPvp').addEventListener('click', function(){
+      self.pvp = true; Engine.pvp = true;
+      self.pick = {mine:null, enemy:null}; self.pickWarn = ''; self.showScreen('pick');
+    });
+    document.getElementById('pvpOk').addEventListener('click', function(){ self.finishHandover(); });
+    document.getElementById('coverNet').addEventListener('click', async function(){
+      self.showScreen('cover');
+      NET.panel(true);
+      if(NET.isFile()){
+        NET.panel(false);
+        document.getElementById('netDown').hidden = false;
+        return;
+      }
+      const info = await NET.probe();
+      if(!info || !info.ok){
+        NET.panel(false);
+        document.getElementById('netDown').hidden = false;
+        return;
+      }
+      const url = 'http://' + ((info.ips && info.ips[0]) || location.hostname) + ':' + (location.port || 80);
+      NET.tip('服务正常。手机打开：' + url + ' → 点「联机对战」→「加入房间」。', 'ok');
+    });
+    document.getElementById('netDownGo').addEventListener('click', function(){
+      location.href = 'http://62.234.74.74:8080/';
+    });
+    document.getElementById('netDownOk').addEventListener('click', function(){
+      document.getElementById('netDown').hidden = true;
+    });
+    document.getElementById('netBack').addEventListener('click', function(){ NET.panel(false); });
+    document.getElementById('netHost').addEventListener('click', async function(){
+      if(NET.isFile()){
+        NET.tip('必须从 http:// 或 https:// 打开才能联机。', 'bad');
+        return;
+      }
+      const info = await NET.probe();
+      if(!info || !info.ok){
+        NET.tip('没连上服务，刷新页面再试一次。', 'bad');
+        return;
+      }
+      // 生成 4 位房间号（不重复的概率足够）
+      let code = '';
+      for(let i = 0; i < 4; i++) code += Math.floor(Math.random() * 10);
+      NET.room = code;
+      NET.mode = null;
+      self.pvp = true; Engine.pvp = true;
+
+      const codeEl = document.getElementById('netCode');
+      if(codeEl){ codeEl.hidden = false; codeEl.textContent = code; }
+      const inp = document.getElementById('netRoom');
+      if(inp) inp.value = code;
+
+      NET.connect('host');
+      NET._waitingGuest = true;
+      NET.tip('房间号 ' + code + '。让对方打开同一网址、输入这个房间号就能进来。');
+      NET.showPeers(info.peers);
+      self.pick = {mine:null, enemy:null}; self.pickWarn = '';
+      self.showScreen('pick');
+    });
+    document.getElementById('netJoin').addEventListener('click', async function(){
+      if(NET.isFile()){
+        NET.tip('必须从房主打印的那个 http:// 地址打开，不能双击文件。', 'bad');
+        return;
+      }
+      const inp = document.getElementById('netRoom');
+      const code = (inp ? inp.value : '').replace(/[^0-9a-zA-Z]/g, '');
+      if(code.length < 3){
+        NET.tip('先输入房主给你的房间号。', 'bad');
+        return;
+      }
+      NET.room = code;
+      const info = await NET.probe();
+      if(!info || !info.ok){
+        NET.tip('没连上服务，检查网址有没有输错、网络通不通。', 'bad');
+        return;
+      }
+      if(!info.hosts){
+        NET.tip('房间 ' + code + ' 里还没有房主，确认房间号，或者让房主先建房。', 'bad');
+        return;
+      }
+      NET.connect('guest');
+      NET.installGuestShim();          // 客人本地只读：点击一律发给房主去算
+      NET.tip('已连上，等房主开局后自动进入…', 'ok');
     });
     document.getElementById('pickBack').addEventListener('click', function(){ self.showScreen('cover'); });
     document.getElementById('pickStart').addEventListener('click', function(){
-      if(self.pick.mine && self.pick.enemy) self.startBattle(self.pick.mine, self.pick.enemy);
+      const p = self.pick;
+      if(p.netPick){
+        if(!p.mine) return;
+        NET.post('act', { op: '__pick', faction: p.mine });
+        NET.tip('已经把你的选择发给房主，等他把牌局推过来…', 'ok');
+        return;
+      }
+      if(!p.mine) return;
+      if(typeof NET !== 'undefined' && NET.mode === 'host' && !NET.guestFaction){
+        NET.hostFaction = p.mine;
+        NET.awaitingPick = true;
+        NET.say({ type: 'pickask', hostFaction: p.mine });
+        NET.tip('已把选择权交给对手：他来选自己的势力，选完自动开局…', 'ok');
+        return;
+      }
+      if(p.mine && p.enemy) self.startBattle(p.mine, p.enemy);
     });
     document.getElementById('pickCards').addEventListener('click', function(e){
       const c = e.target.closest('.fcard');
@@ -1924,10 +2457,12 @@ const UI = {
 
   renderPick(){
     const p = this.pick;
-    document.getElementById('pickStep').textContent =
-      !p.mine ? '第一步 · 点一张势力卡，选我方' :
-      !p.enemy ? '第二步 · 再点另一张势力卡，选对方（不能与我方相同）' :
-      '双方已定 · 点「开战」进入棋盘';
+    document.getElementById('pickStep').textContent = p.netPick
+      ? (p.mine ? '你选的是「' + FACTION_NAME[p.mine] + '」· 点「确认」发给房主'
+                : '对方选了「' + FACTION_NAME[p.hostFaction] + '」· 你从其余三家里选自己的势力')
+      : (!p.mine ? '第一步 · 点一张势力卡，选我方'
+        : !p.enemy ? '第二步 · 再点另一张势力卡，选对方（不能与我方相同）'
+        : '双方已定 · 点「开战」进入棋盘');
     const info = {
       shu: {full:'蜀汉', hero:'刘备', tag:'单兵强攻', chips:['连击','免反击','反伤','直取主帅']},
       wei: {full:'曹魏', hero:'曹操', tag:'体系流', chips:['加血','回粮','反击定伤']},
@@ -1948,11 +2483,21 @@ const UI = {
     }
     document.getElementById('pickCards').innerHTML = html;
     document.getElementById('pickWarn').textContent = this.pickWarn || '';
-    document.getElementById('pickStart').disabled = !(p.mine && p.enemy);
+    document.getElementById('pickStart').disabled = p.netPick
+      ? !p.mine
+      : (typeof NET !== 'undefined' && NET.mode === 'host' && !NET.guestFaction
+          ? !p.mine
+          : !(p.mine && p.enemy));
   },
 
   onPickCard(f){
     const p = this.pick;
+    if(p.netPick){
+      if(f === p.hostFaction){ this.pickWarn = '对方已经选了这个势力，换一个。'; }
+      else { p.mine = f; this.pickWarn = ''; }
+      this.renderPick();
+      return;
+    }
     if(!p.mine){ p.mine = f; this.pickWarn = ''; }
     else if(!p.enemy){
       if(f === p.mine){ this.pickWarn = '两边不能一样：对方请选另一个势力。'; }
@@ -1970,14 +2515,22 @@ const UI = {
     this.clearFx();
     this.closeInspect();
     this.showScreen('game');
+    Engine.pvp = !!this.pvp;
     Engine.newGame(faction, this.enemyFaction);
-    Engine.startTurn();
+    Engine.startTurn('shu');
+    this.me = 'shu';
     this.sel = null;
     this.msg = '';
     this.msgWarn = false;
     this.renderedLog = 0;
     document.getElementById('log').innerHTML = '';
     this.render();
+    if(typeof NET !== 'undefined' && NET.mode === 'host'){
+      NET.hostSide = 'shu';
+      NET.guestSide = 'wei';
+      NET.started = true;
+      NET.pushNow();
+    }
   },
 
   /* ---------- 教学关：固定牌序、六步引导、点错不生效 ---------- */
@@ -2090,6 +2643,114 @@ const UI = {
     this.startBattle(this.playerFaction, this.enemyFaction);
   },
 
+  finishHandover(){
+    if(typeof NET !== 'undefined' && NET.mode === 'guest') return;   // 客人不驱动回合
+    document.getElementById('pvpWrap').hidden = true;
+    if(typeof NET !== 'undefined' && NET.mode === 'host'){
+      const n1 = Engine.handoverTo || 'wei';
+      if(n1 === 'wei'){ Engine.startTurn('wei'); }
+      else { Engine.endRound(); Engine.startTurn('shu'); }
+      this.me = NET.hostSide;      // 房主身份固定，不跟着 active 变
+      this.render();
+      NET.pushNow();
+      return;
+    }
+    const next = Engine.handoverTo || 'wei';
+    if(next === 'wei'){
+      Engine.startTurn('wei');          // 同回合内换人布置
+    }else{
+      Engine.endRound();                // 魏方打完 → 进入下一回合，先手方开场
+    }
+    this.me = next;
+    this.sel = null;
+    this.msg = '';
+    this.render();
+  },
+
+  /* ---------- 回合倒计时（双人同屏 / 联机）：99 秒不操作就自动交棒 ---------- */
+  timerKey(){
+    const st = Engine.state;
+    return st.round + '|' + (st.active || '') + '|' + st.phase;
+  },
+  stopTimer(){
+    if(this.timerId){ clearInterval(this.timerId); this.timerId = null; }
+    this.timerDeadline = 0;
+    const el = document.getElementById('turnTimer');
+    if(el){ el.hidden = true; el.classList.remove('warn'); }
+  },
+  /* 不是自己的回合：整屏浅灰，看得到但点不了（观战席） */
+  syncLock(){
+    const m = document.getElementById('lockMask');
+    if(!m) return;
+    const netOn = (typeof NET !== 'undefined' && NET.mode);
+    if(!netOn && !this.pvp){ m.hidden = true; return; }
+    const st = Engine.state;
+    if(!st || this.tut || st.winner || this.busy){ m.hidden = true; return; }
+    const phase = st.phase;
+    const myTurn = (st.active === this.me);
+    m.hidden = !!myTurn;
+    if(!myTurn){
+      if(phase === 'supply') m.textContent = '该对方了：他在决定喂不喂粮…';
+      else if(phase === 'draw' || phase === 'deploy') m.textContent = '该对方了：他在布置…';
+      else m.textContent = '该对方了：正在结算他的进攻…';
+    }
+  },
+
+  syncTimer(){
+    const st = Engine.state;
+    const el = document.getElementById('turnTimer');
+    const running = this.pvp && !this.tut && st && !st.winner && !this.busy &&
+      (typeof NET === 'undefined' || NET.mode !== 'guest') &&
+      (st.phase === 'draw' || st.phase === 'deploy' || st.phase === 'supply');
+    if(!running){ this.stopTimer(); return; }
+    const key = this.timerKey();
+    if(key !== this.timerKeyAt){
+      this.timerKeyAt = key;
+      this.timerDeadline = Date.now() + CONFIG.TURN_SECONDS * 1000;
+    }
+    if(!this.timerDeadline) this.timerDeadline = Date.now() + CONFIG.TURN_SECONDS * 1000;
+    if(!this.timerId){
+      const self = this;
+      this.timerId = setInterval(function(){ self.tickTimer(); }, 250);
+    }
+    this.tickTimer();
+  },
+  tickTimer(){
+    const el = document.getElementById('turnTimer');
+    if(!el || !this.timerDeadline) return;
+    const left = Math.max(0, Math.ceil((this.timerDeadline - Date.now()) / 1000));
+    el.hidden = false;
+    el.textContent = '思考 ' + left + ' 秒';
+    el.classList.toggle('warn', left <= 10);
+    if(left <= 0){ this.stopTimer(); this.timeUp(); }
+  },
+  async timeUp(){
+    if(this.busy || !this.pvp || this.tut) return;
+    const st = Engine.state;
+    if(st.winner) return;
+    this.busy = true;
+    const runId = this.runId;
+    try{
+      Engine.log('时间到：这一回合按默认处理（不抽将，战线将扣 1 血）', 'sys');
+      if(st.phase === 'draw'){
+        Engine.endDraw(this.me);          // 不抽将 → 剩余资源点全转粮草
+        this.render(); await this.wait(420);
+      }
+      if(Engine.state.phase === 'deploy'){
+        Engine.endDeploy(this.me);        // 不放将
+        this.render(); await this.wait(420);
+      }
+      let guard = 0;
+      while(Engine.state.phase === 'supply' && Engine.state.supplyPending.length && guard++ < 10){
+        Engine.feed(Engine.state.supplyPending[0], false, this.me);  // 默认省粮（不喂，扣 1 血）
+        this.render(); await this.wait(300);
+      }
+    } finally {
+      this.busy = false;
+      if(runId === this.runId) this.render();
+    }
+    this.maybeRunCombat();
+  },
   updateSpeedBtn(){
     document.getElementById('speedBtn').textContent =
       this.speed === 0 ? '速度 瞬时' : '速度 ×' + this.speed;
@@ -2108,17 +2769,27 @@ const UI = {
 
   /* ---------- 点击翻译 ---------- */
   onDeck(){
+    if(typeof NET !== 'undefined' && NET.mode === 'host' && Engine.state && Engine.state.active === 'wei'){
+      this.flash('等对方在手机上操作…（对方点完会自动同步过来）', true);
+      this.render();
+      return;
+    }
     if(this.busy) return;
     if(this.tut && this.tut.step !== 1) return;
     const st = Engine.state;
     if(st.phase !== 'draw'){ this.flash('只有摸牌阶段能点牌堆抽将', true); this.render(); return; }
-    const r = Engine.drawOne('shu');
+    const r = Engine.drawOne(this.me);
     if(r.ok){ this.msg = ''; if(this.tut) this.tut.step = 2; }
     else this.flash(r.reason, true);
     this.render();
   },
 
   onPhaseBtn(){
+    if(typeof NET !== 'undefined' && NET.mode === 'host' && Engine.state && Engine.state.active === 'wei'){
+      this.flash('等对方在手机上操作…（对方点完会自动同步过来）', true);
+      this.render();
+      return;
+    }
     if(this.busy) return;
     const st = Engine.state;
     if(this.tut){
@@ -2133,11 +2804,11 @@ const UI = {
       return;
     }
     if(st.phase === 'draw'){
-      Engine.endDraw();
+      Engine.endDraw(this.me);
       this.sel = null; this.msg = '';
     }else if(st.phase === 'deploy'){
       this.sel = null; this.msg = '';
-      Engine.endDeploy();
+      Engine.endDeploy(this.me);
     }
     this.render();
     this.maybeRunCombat();
@@ -2161,13 +2832,18 @@ const UI = {
   },
 
   onBoard(e){
+    if(typeof NET !== 'undefined' && NET.mode === 'host' && Engine.state && Engine.state.active === 'wei'){
+      this.flash('等对方在手机上操作…（对方那边点完会自动同步过来）', true);
+      this.render();
+      return;
+    }
     if(this.busy) return;
     const st = Engine.state;
     if(this.tut){
       if(this.tut.step === 6){
         const fb = e.target.closest('[data-feed="1"]');   // 第 6 步只认喂粮
         if(!fb) return;
-        const r = Engine.feed(+fb.dataset.lane, true);
+        const r = Engine.feed(+fb.dataset.lane, true, 'shu');
         if(r.ok){ this.msg = ''; this.render(); this.runTutCombat(); }
         else { this.flash(r.reason, true); this.render(); }
         return;
@@ -2187,7 +2863,7 @@ const UI = {
     if(feedBtn){
       const lane = +feedBtn.dataset.lane;
       const fed = feedBtn.dataset.feed === '1';
-      const r = Engine.feed(lane, fed);
+      const r = Engine.feed(lane, fed, this.me);
       if(!r.ok) this.flash(r.reason, true); else this.msg = '';
       this.render();
       this.maybeRunCombat();
@@ -2202,13 +2878,13 @@ const UI = {
       return;
     }
     const u = st.board[lane][row];
-    const own = (row === ROW.shu.front || row === ROW.shu.home);
+    const own = (row === ROW[this.me].front || row === ROW[this.me].home);
     if(this.sel && this.sel.type === 'hand'){
       if(own && !u){
-        const r = Engine.playCard('shu', this.sel.idx, lane, row);
+        const r = Engine.playCard(this.me, this.sel.idx, lane, row);
         if(r.ok){ this.sel = null; this.msg = ''; }
         else this.flash(r.reason, true);
-      }else if(u && u.owner === 'shu'){
+      }else if(u && u.owner === this.me){
         this.sel = {type:'unit', lane:lane, row:row}; this.msg = '';
       }else{
         this.flash('只能布置在己方空格（我·战线 / 我·本营）', true);
@@ -2216,17 +2892,17 @@ const UI = {
     }else if(this.sel && this.sel.type === 'unit'){
       if(lane !== this.sel.lane){
         this.flash('不能换线：只能在本营与战线之间上下移动', true);
-      }else if(u && u.owner === 'shu'){
+      }else if(u && u.owner === this.me){
         this.sel = {type:'unit', lane:lane, row:row}; this.msg = '';
       }else if(own && !u){
-        const r = Engine.moveUnit('shu', lane, this.sel.row, row);
+        const r = Engine.moveUnit(this.me, lane, this.sel.row, row);
         if(r.ok){ this.sel = null; this.msg = ''; }
         else this.flash(r.reason, true);
       }else{
         this.flash('目标格必须为空', true);
       }
     }else{
-      if(u && u.owner === 'shu'){ this.sel = {type:'unit', lane:lane, row:row}; this.msg = ''; }
+      if(u && u.owner === this.me){ this.sel = {type:'unit', lane:lane, row:row}; this.msg = ''; }
       else if(u){ this.flash('这是敌方武将', true); }
       else{ this.flash('先点一张手牌，或点场上的己方武将', true); }
     }
@@ -2235,7 +2911,7 @@ const UI = {
 
   /* ---------- 渲染 ---------- */
   phaseHint(){
-    const st = Engine.state, s = st.sides.shu;
+    const st = Engine.state, s = st.sides[this.me || 'shu'];
     const diceNote = st.color ? ' 本回合骰色「' + st.color.name + '」：同色技能发动，无色技能始终发动。' : '';
     switch(st.phase){
       case 'draw':
@@ -2264,7 +2940,13 @@ const UI = {
 
   render(){
     const st = Engine.state;
+    if(st.active && (typeof NET === 'undefined' || !NET.mode)) this.me = st.active;
+    if(this.pvp) Engine.pvp = true;
     const shu = st.sides.shu, wei = st.sides.wei;
+    const myP = this.me;
+    this.syncTimer();
+    this.syncLock();
+    if(typeof NET !== 'undefined' && NET.mode === 'host') NET.schedulePush();
 
     /* 顶栏 */
     document.getElementById('roundLabel').textContent = '第 ' + st.round + ' 回合';
@@ -2302,7 +2984,7 @@ const UI = {
     document.getElementById('phaseSub').textContent =
       st.phase === 'draw' ? '剩余资源点 ' + shu.points :
       st.phase === 'supply' ? '待决策 ' + st.supplyPending.length + ' 个' :
-      st.phase === 'deploy' ? '我方粮草 ' + shu.supply : '';
+      st.phase === 'deploy' ? '我方粮草 ' + st.sides[myP].supply : '';
 
     /* 教学引导条 */
     const t = this.tut;
@@ -2324,12 +3006,24 @@ const UI = {
     this.renderInspect();
     document.getElementById('board').classList.toggle('tut-dim', !!t && (t.step === 1 || t.step === 2));
 
+    /* 双方主帅标签（按实际势力） */
+    if(Engine.state){
+      const tW = document.getElementById('weiTitle');
+      const tS = document.getElementById('shuTitle');
+      const fW = Engine.factionOf && Engine.factionOf.wei;
+      const fS = Engine.factionOf && Engine.factionOf.shu;
+      if(tW && fW) tW.textContent = FACTION_FULL[fW] + '主帅';
+      if(tS && fS) tS.textContent = FACTION_FULL[fS] + '主帅';
+    }
+
     /* 终局横幅 */
     const banner = document.getElementById('overBanner');
     if(st.phase === 'over'){
       banner.hidden = false;
-      const wf = Engine.factionOf[st.winner];
-      const lf = Engine.factionOf[st.winner === 'shu' ? 'wei' : 'shu'];
+      const winSlot = (st.winner === 'shu' || st.winner === 'wei') ? st.winner : 'shu';
+      const loseSlot = (winSlot === 'shu') ? 'wei' : 'shu';
+      const wf = Engine.factionOf[winSlot];
+      const lf = Engine.factionOf[loseSlot];
       document.getElementById('overText').textContent =
         st.winner === 'shu' ? FACTION_FULL[wf] + '大胜 · ' + FACTION_FULL[lf] + '主授首'
                           : FACTION_FULL[wf] + '获胜 · ' + FACTION_FULL[lf] + '主倾覆';
@@ -2348,7 +3042,7 @@ const UI = {
     pb.classList.toggle('tut-glow', !!t && ((t.step === 2 && st.phase === 'draw') || (t.step === 5 && st.phase === 'deploy')));
     pb.classList.toggle('tut-dim', !!t && (t.step === 1 || t.step === 3 || t.step === 4 || t.step === 6));
     const infoTail =
-      st.phase === 'draw' ? '已抽 ' + shu.drawn + ' / ' + CONFIG.MAX_DRAW + ' 张 · 剩余 ' + shu.points + ' 点将转为粮草' :
+      st.phase === 'draw' ? '已抽 ' + st.sides[myP].drawn + ' / ' + CONFIG.MAX_DRAW + ' 张 · 剩余 ' + shu.points + ' 点将转为粮草' :
       st.phase === 'supply' ? '我方粮草 ' + shu.supply + ' · 喂粮每人耗 1 粮草' :
       (st.phase === 'combat' || st.phase === 'combatReady') ? '逐线结算，箭头指示攻击方向' : '';
     document.getElementById('actionInfo').textContent =
@@ -2385,16 +3079,23 @@ const UI = {
 
   renderBoard(){
     const st = Engine.state;
+    const myP = this.me || 'shu';
     const b = document.getElementById('board');
     let html = '<div class="b-corner">战线</div>';
     for(let l=0; l<CONFIG.LANES; l++) html += '<div class="lane-head">' + (l+1) + ' 号线</div>';
     const sel = this.sel;
-    for(let r=0; r<4; r++){
-      const enemyRow = (r === ROW.wei.home || r === ROW.wei.front);
-      html += '<div class="row-label ' + (enemyRow?'enemy':'mine') + '">' + ROW_LABEL[r] + '</div>';
+    /* 换人后上下镜像：自己那一方永远在下面 */
+    const rowOrder = (myP === 'wei') ? [3,2,1,0] : [0,1,2,3];
+    for(let ri=0; ri<4; ri++){
+      const r = rowOrder[ri];
+      const ownRow = (r === ROW[this.me].front || r === ROW[this.me].home);
+      const foeSide = this.me === 'shu' ? 'wei' : 'shu';
+      const rowName = ownRow ? (r === ROW[this.me].front ? '我·战线' : '我·本营')
+                             : (r === ROW[foeSide].front ? '敌·战线' : '敌·本营');
+      html += '<div class="row-label ' + (ownRow?'mine':'enemy') + '">' + rowName + '</div>';
       for(let l=0; l<CONFIG.LANES; l++){
         const u = st.board[l][r];
-        const own = (r === ROW.shu.front || r === ROW.shu.home);
+        const own = ownRow;
         let target = false;
         if(st.phase === 'deploy' && sel){
           if(sel.type === 'hand') target = own && !u;
@@ -2410,8 +3111,8 @@ const UI = {
         }
         const fac = Engine.factionOf[u.owner];
         let feedHtml = '';
-        if(st.phase === 'supply' && u.owner === 'shu' && r === ROW.shu.front && st.supplyPending.indexOf(l) >= 0){
-          const noFood = st.sides.shu.supply < 1;
+        if(st.phase === 'supply' && u.owner === myP && r === ROW[myP].front && st.supplyPending.indexOf(l) >= 0){
+          const noFood = st.sides[myP].supply < 1;
           const t6 = this.tut && this.tut.step === 6;
           feedHtml = '<div class="feed-btns">' +
             '<button type="button" class="' + (t6?'tut-glow':'') + '" data-feed="1" data-lane="' + l + '"' + (noFood?' disabled title="粮草不足"':'') + '>喂粮</button>' +
@@ -2430,7 +3131,7 @@ const UI = {
   },
 
   renderHand(){
-    const st = Engine.state, s = st.sides.shu;
+    const st = Engine.state, s = st.sides[this.me || 'shu'];
     const pile = document.getElementById('deckPile');
     pile.className = 'deck-pile' + (st.phase === 'draw' && !this.busy && (!this.tut || this.tut.step === 1) ? ' active' : '');
     pile.classList.toggle('tut-glow', !!this.tut && this.tut.step === 1);
@@ -2544,22 +3245,28 @@ const UI = {
   /* ---------- 结算动画播放器：逐条消费引擎生成器的演示提示 ---------- */
   maybeRunCombat(){
     if(this.tut) return;
+    if(typeof NET !== 'undefined' && NET.mode === 'guest') return;   // 客人不自己算，等房主推
     if(!this.busy && Engine.state.phase === 'combatReady') this.runCombat();
   },
 
   async runCombat(){
     if(this.busy) return;
+    if(typeof NET !== 'undefined' && NET.mode === 'guest') return;   // 客人不播结算，直接看快照
     this.busy = true;
     this.msg = '';
     const runId = ++this.runId;
     if(this.speed === 0){
       // 瞬时：不做动画，规则一次性 drain，日志照写
-      for(const ev of Engine.combatGen()){ /* drain */ }
+      for(const ev of Engine.combatGen(Engine.state.active || this.me)){ /* drain */ }
       this.busy = false;
+      if(Engine.state.phase === 'handover'){       // 瞬时模式下也要交接
+        this.finishHandover();
+        NET.schedulePush();
+      }
       this.render();
       return;
     }
-    await this.playGen(Engine.combatGen());
+    await this.playGen(Engine.combatGen(Engine.state.active || this.me));
   },
 
   /* 教学关结算：只跑我方逐线攻击，不走电脑回合 */
@@ -2605,6 +3312,29 @@ const UI = {
 
   async playEvent(ev){
     switch(ev.t){
+      case 'skillFx': {
+        for(const it of ev.list){ this.skillChip(it); await this.wait(200); }
+        await this.wait(90);
+        break;
+      }
+      case 'pvpHandover': {
+        if(typeof NET !== 'undefined' && NET.mode === 'host'){
+          this.msg = '';
+          this.finishHandover();
+          NET.schedulePush();
+          break;
+        }
+        this.msg = '';
+        const nxt = ev.next || Engine.handoverTo || 'wei';
+        const now = (nxt === 'wei');
+        document.getElementById('pvpWho').textContent = now
+          ? ('轮到' + FACTION_FULL[Engine.factionOf.wei] + '布置')
+          : ('轮到' + FACTION_FULL[Engine.factionOf.shu] + '开始第 ' + (Engine.state.round + 1) + ' 回合');
+        document.getElementById('pvpOk').textContent = now ? '交给对方' : '我来接手';
+        document.getElementById('pvpWrap').hidden = false;
+        this.render();
+        break;
+      }
       case 'stand': await this.wait(300); break;
       case 'rest': await this.wait(350); break;
       case 'attack': this.drawArrow(ev, false); await this.wait(500); this.clearArrows(); break;
@@ -2668,6 +3398,31 @@ const UI = {
     setTimeout(function(){ f.remove(); }, 700);
   },
 
+  /* 技能效果色块：紫=负面，绿=正面；贴在被作用的对象上，约 0.45 秒后淡出 */
+  /* 技能效果：被影响的格子/主帅/粮草闪一下，正面绿、负面紫 */
+  skillChip(it){
+    const up = it.kind === 'buff';
+    const cls = up ? 'fx-flash-up' : 'fx-flash-down';
+    let el = null;
+    if(it.row === -1 && it.lane === -1){          // 主帅
+      el = document.getElementById(it.side === 'wei' ? 'weiPanel' : 'shuPanel');
+    }else if(it.row === -1 && it.lane === -2){    // 粮草
+      el = document.getElementById(it.side === 'wei' ? 'weiCaps' : 'shuCaps');
+      if(!el) el = document.getElementById(it.side === 'wei' ? 'weiPanel' : 'shuPanel');
+    }else{
+      el = this.cellEl(it.lane, it.row);
+    }
+    if(!el) return;
+    el.classList.remove('fx-flash-up');
+    el.classList.remove('fx-flash-down');
+    void el.offsetWidth;                          // 重置动画，连续触发也能重播
+    el.classList.add(cls);
+    setTimeout(function(){
+      el.classList.remove('fx-flash-up');
+      el.classList.remove('fx-flash-down');
+    }, 320);
+  },
+
   floatCell(lane, row, text){
     const el = this.cellEl(lane, row);
     if(!el) return;
@@ -2727,5 +3482,6 @@ if(location.hash === '#selftest'){
   UI.init();
 }
 </script>
+<div id="lockMask" hidden>等对方操作…</div>
 </body>
 </html>
